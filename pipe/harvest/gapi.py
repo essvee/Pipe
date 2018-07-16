@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import httplib2
 import os
 from bs4 import BeautifulSoup
@@ -5,7 +8,6 @@ from apiclient import discovery, errors
 from oauth2client import client, tools
 from oauth2client.file import Storage
 import base64
-import google.auth
 
 try:
     import argparse
@@ -57,31 +59,40 @@ def main():
 
     # Gets list of ids of unread messages
     unread_messages = list_unread_messages(service)
+    result_list = []
 
-    # for n in unread_messages:
-    message = get_message(service, '1646083b5b48bb8d')
-    labels = message['labelIds']
-    body_decoded = base64.urlsafe_b64decode(message['payload']['body']['data']).decode("utf-8")
+    for n in unread_messages:
+        message = get_message(service, n['id'])
+        label = message['labelIds']
 
-    # Turns body of email into html object
-    soup = BeautifulSoup(body_decoded, 'html.parser')
-    h3 = soup("h3")
+        body_decoded = base64.urlsafe_b64decode(message['payload']['body']['data']).decode("utf-8")
 
-    for n in h3:
-        # Gets PDF/HTML indicator, if present
-        if n.span:
-            format = n.span.text
+        # Turns body of email into html object
+        soup = BeautifulSoup(body_decoded, 'html.parser')
+        h3 = soup("h3")
 
-        # Gets author/journal/pub date
-        bib_details = n.next_sibling
-        bib_details_text = bib_details.text
+        for i in h3:
+            result = {'label': label}
+            # Gets PDF/HTML indicator, if present
+            if i.span:
+                result['format'] = i.span.text
+            else:
+                result['format'] = "UNKNOWN"
 
-        # Gets snippet matching search query
-        snippet = bib_details.next_sibling
-        snippet_text = " ".join(snippet.stripped_strings)
+            # Gets author/journal/pub date
+            bib_details = i.next_sibling
+            result['bib_details'] = bib_details.text
 
-        # Gets title
-        title = n.find('a', class_="gse_alrt_title").text
+            # Gets snippet matching search query
+            snippet = bib_details.next_sibling
+            result['snippet'] = " ".join(snippet.stripped_strings).replace("…", "")
+
+            # Gets title
+            result['title'] = i.find('a', class_="gse_alrt_title").text
+
+            result_list.append(result)
+
+    return result_list
 
 
 def list_unread_messages(service):
@@ -101,7 +112,7 @@ def list_unread_messages(service):
 
             return messages
     except errors.HttpError as error:
-        print(f'An error occurred: ${error}')
+        print(f'An error occurred during unread message retrieval: ${error}')
 
 
 def get_message(service, msg_id):
@@ -115,7 +126,7 @@ def get_message(service, msg_id):
         message = service.users().messages().get(userId='me', id=msg_id, format='full').execute()
         return message
     except errors.HttpError as error:
-        print(f'An error occurred: ${error}')
+        print(f'An error occurred during full-text message retrieval: {error}')
 
 
 if __name__ == '__main__':
