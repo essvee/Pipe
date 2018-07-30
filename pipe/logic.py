@@ -5,9 +5,10 @@ from pipe.harvest import gapi
 from pipe.utils import write_out
 
 # Get email titles and metadata from gmail inbox + write to file
-result_list = gapi.main()
-fields = result_list[0].keys()
-write_out.dict_to_csv(result_list, fields, 'gapi_results.csv')
+obj = gapi.Gapi()
+result_list = obj.main()
+header_fields = result_list[0].keys()
+write_out.dict_to_csv(result_list, header_fields, 'gapi_results.csv')
 
 
 # TODO - Send just titles for each to crossref
