@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from pipe.harvest import gapi
-from pipe.utils import write_out
+from pipe.utils import util
 
 # Get email titles and metadata from gmail inbox + write to file
 obj = gapi.Gapi()
 result_list = obj.main()
 header_fields = result_list[0].keys()
-write_out.dict_to_csv(result_list, header_fields, 'gapi_results.csv')
+w = util.Util()
+w.dict_to_csv(result_list, header_fields, 'gapi_results.csv')
 
 
 # TODO - Send just titles for each to crossref
