@@ -26,6 +26,7 @@ class Gapi:
 
         Returns:
             Credentials, the obtained credential.
+            :return: Gmail Service object
         """
         home_dir = os.path.expanduser('~')
         credential_dir = os.path.join(home_dir, '.credentials')
@@ -46,13 +47,11 @@ class Gapi:
 
         http = credentials.authorize(httplib2.Http())
         service = discovery.build('gmail', 'v1', http=http)
-
         return service
 
     @staticmethod
     def parse_message(message):
         label = message['labelIds']
-
         body_decoded = base64.urlsafe_b64decode(message['payload']['body']['data']).decode("utf-8")
 
         # Turns body of email into html object
