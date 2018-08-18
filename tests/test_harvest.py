@@ -1,6 +1,6 @@
 import unittest
 import googleapiclient
-from pipe.harvest.gapi import Gapi
+from pipe.src.gapi import Gapi
 
 
 class MyTestCase(unittest.TestCase):
