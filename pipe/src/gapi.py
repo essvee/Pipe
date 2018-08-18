@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import re
-from datetime import date, time
+from datetime import date
 
 import httplib2
 import os
-from bs4 import BeautifulSoup
 from apiclient import discovery, errors
 from oauth2client import client, tools
 from oauth2client.file import Storage
@@ -16,8 +15,6 @@ from pipe.src.gapi_email import GapiEmail
 
 
 class Gapi:
-
-    # constructor, doesn't take anything
     def __init__(self):
         # If modified, delete previously saved credentials at ~/.credentials/gmail-credentials.json
         self.__SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
@@ -34,8 +31,9 @@ class Gapi:
         # List to hold gapi_emails
         email_objects = []
 
+        # For each email, get the full text, parse and convert to gapi_email objects
         for n in unread_emails:
-            full_email = self.get_email(service, n['id'])
+            full_email = self.get_email_full(service, n['id'])
             email_obj = self.parse_email(full_email)
             email_objects.append(email_obj)
 
@@ -93,7 +91,7 @@ class Gapi:
             print(f'An error occurred during unread email retrieval: ${error}')
 
     @staticmethod
-    def get_email(service, email_id):
+    def get_email_full(service, email_id):
         """
         Get email from inbox via id
         :param service: Authorised Gmail API Service object
