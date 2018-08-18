@@ -1,5 +1,5 @@
-class Pemail(object):
-    def __init__(self, harvested_date, sent_date, email_body, email_id, label, messages):
+class GapiEmail(object):
+    def __init__(self, harvested_date, sent_date, email_body, email_id, label=None, messages=None):
         self.harvested_date = harvested_date
         self.sent_date = sent_date
         self.email_body = email_body
