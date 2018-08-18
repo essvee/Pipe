@@ -1,13 +1,17 @@
 import unittest
 import googleapiclient
-from pipe.src.gapi import Gapi
+import pipe.src.gapi
 
 
 class MyTestCase(unittest.TestCase):
 
-    def test_get_credentials(self):
-        gapi = Gapi()
-        result = gapi.get_credentials()
+    def test_constructor(self):
+        myGapi = pipe.src.gapi.Gapi()
+        self.assertTrue(isinstance(myGapi, pipe.src.gapi.Gapi))
+
+    def test_fields(self):
+        myGapi = pipe.src.gapi.Gapi()
+        result = myGapi.get_credentials()
         self.assertTrue(isinstance(result, googleapiclient.discovery.Resource))
 
 
