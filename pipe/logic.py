@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pipe.harvest import gapi
-from pipe.utils import util
+from pipe.src import gapi, util
 
 # Get email titles and metadata from gmail inbox + write to file
 obj = gapi.Gapi()
