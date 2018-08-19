@@ -109,7 +109,7 @@ class Gapi:
         # Get data to feed into p_email constructor
         date_harvested = date.today()
         date_received = date.fromtimestamp(int(p_email['internalDate']) / 1000).isoformat()
-        email_body = base64.urlsafe_b64decode(p_email['payload']['body']['data']).decode("utf-8")
+        email_body = base64.urlsafe_b64decode(p_email['payload']['body']['data'])
         email_id = p_email['id']
         label = None
 
@@ -123,35 +123,3 @@ class Gapi:
         # Create Email object and return
         email_obj = GapiEmail(date_harvested, date_received, email_body, email_id, label)
         return email_obj
-
-        # # Turns body of email into html object
-        # soup = BeautifulSoup(email_body, 'html.parser')
-        # h3 = soup("h3")
-        #
-        # for i in h3:
-        #     result = {'label': label}
-        #     # Gets PDF/HTML indicator, if present
-        #     if i.span:
-        #         result['format'] = i.span.text
-        #     else:
-        #         result['format'] = "UNKNOWN"
-        #
-        #     # Gets author/journal/pub date
-        #     bib_details = i.next_sibling
-        #     result['bib_details'] = bib_details.text
-        #
-        #     # Gets snippet matching search query
-        #     snippet = bib_details.next_sibling
-        #     result['snippet'] = " ".join(snippet.stripped_strings).replace("…", "")
-        #
-        #     # Gets title
-        #     result['title'] = i.find('a', class_="gse_alrt_title").text
-        #
-        #     return result
-
-
-
-
-
-
-
