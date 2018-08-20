@@ -1,16 +1,20 @@
+from datetime import date
+
 from bs4 import BeautifulSoup
 import unicodedata
 from pipe.src.message import Message
 
 
 class GapiEmail(object):
-    def __init__(self, harvested_date, sent_date, email_body, email_id=None, label=None):
-        self.harvested_date = harvested_date
+    def __init__(self, harvested_date, sent_date, email_body, gapi_email_id, email_id=None, label=None):
+        self.harvested_date = harvested_date.strftime('%Y-%m-%d')
         self.sent_date = sent_date
         self.email_body = email_body
         self.email_id = email_id
+        self.gapi_email_id = gapi_email_id
         self.label_id = label
         self.messages = self.extract_messages()
+        self.email_count = len(self.messages)
 
     def extract_messages(self):
         # Turn body of email into html object
@@ -35,15 +39,16 @@ class GapiEmail(object):
             title = self.clean_string(i.find('a', class_="gse_alrt_title").text)
 
             # Build message object + add to list
-            all_messages.append(Message(citation_format,
-                                        title,
-                                        bib_data,
-                                        snippet_clean,
-                                        parsed_bib_data['m_author'],
-                                        parsed_bib_data['m_pub_title'],
-                                        parsed_bib_data['m_pub_year'],
-                                        self.label_id,
-                                        self.email_id))
+            all_messages.append(Message(citation_format=citation_format,
+                                        title=title,
+                                        bib_data=bib_data,
+                                        snippet=snippet_clean,
+                                        m_author=parsed_bib_data['m_author'],
+                                        m_pub_title=parsed_bib_data['m_pub_title'],
+                                        m_pub_year=parsed_bib_data['m_pub_year'],
+                                        label=self.label_id,
+                                        gapi_email_id=self.gapi_email_id,
+                                        email_id=self.email_id))
 
         return all_messages
 
@@ -75,3 +80,11 @@ class GapiEmail(object):
     @staticmethod
     def clean_string(string):
         return unicodedata.normalize("NFKD", string).replace("...", "").strip()
+
+    # Returns field values as tuple
+    def get_values(self):
+        print(f"{self.harvested_date}, {self.sent_date}, {self.label_id}, "
+              f"{self.email_count}, {self.gapi_email_id}")
+
+        return (self.harvested_date, self.sent_date, self.label_id,
+                self.email_count, self.gapi_email_id)

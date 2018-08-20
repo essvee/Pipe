@@ -12,6 +12,7 @@ import base64
 import argparse
 
 from pipe.src.gapi_email import GapiEmail
+from pipe.src.util import Util
 
 
 class Gapi:
@@ -37,7 +38,22 @@ class Gapi:
             email_obj = self.parse_email(full_email)
             email_objects.append(email_obj)
 
+        # self.store_emails(email_objects)
+
         return email_objects
+
+    @staticmethod
+    def store_emails(email_values):
+        parameter_list = [i.get_values for i in email_values]
+
+        sql = """INSERT INTO email_store (harvested_date, sent_date, label_id, message_count, 
+        gapi_email_id) VALUES (%s, %s, %s, %s, %s)"""
+
+        print(parameter_list)
+
+        u = Util()
+        u.update_db(sql, parameter_list)
+
 
     def get_credentials(self):
         """Gets user credentials from storage.
@@ -110,7 +126,7 @@ class Gapi:
         date_harvested = date.today()
         date_received = date.fromtimestamp(int(p_email['internalDate']) / 1000).isoformat()
         email_body = base64.urlsafe_b64decode(p_email['payload']['body']['data'])
-        email_id = p_email['id']
+        gapi_email_id = p_email['id']
         label = None
 
         # Go through labels looking for custom ones
@@ -121,5 +137,6 @@ class Gapi:
                 break
 
         # Create Email object and return
-        email_obj = GapiEmail(date_harvested, date_received, email_body, email_id, label)
+        email_obj = GapiEmail(harvested_date=date_harvested, sent_date=date_received, email_body=email_body,
+                              gapi_email_id=gapi_email_id, label=label)
         return email_obj
