@@ -1,28 +1,32 @@
 from dataclasses import dataclass
 from datetime import date
+from pipe.src.message import Message
+
 
 @dataclass
 class Citation:
-    abstract: str
-    author: list
-    citation_id: int
-    classification: str
-    content_version: str
-    pipe_created_date: date
-    crossref_deposited_date: date
-    doi: str
-    issue: str
-    issued_date: date
-    language: str
-    # TODO - add Message object as attribute
+    cr_author: list
+    cr_doi: str
+    harvested_date: date
+    cr_issued_date: date
+    message: Message
+    cr_title: str
+    cr_type: str
+    cr_content_version: str = None
+    cr_subject: str = None
     # TODO - add Bibliometric object as attribute
-    pub_isbn: str
-    pub_issn: str
-    pub_title: str
-    pub_publisher: str
-    oa_updated_date: date
-    oa_retrieved_date: date
-    oa_flag: bool
-    oa_best_url: str
-    oa_pdf_url: str
-    oa_machine_url: str
+    cr_pub_title: str = None
+    cr_pub_publisher: str = None
+    oa_updated_date: date = None
+    oa_retrieved_date: date = None
+    oa_flag: bool = 0
+    oa_best_url: str = None
+    oa_pdf_url: str = None
+    oa_machine_url: str = None
+    pub_issn: str = None
+    pub_isbn: str = None
+    citation_id: int = None
+    classification: str = None
+    cr_issue: str = None
+    cr_volume: str = None
+    cr_page: str = None
