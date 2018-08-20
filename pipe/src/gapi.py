@@ -38,13 +38,14 @@ class Gapi:
             email_obj = self.parse_email(full_email)
             email_objects.append(email_obj)
 
-        # self.store_emails(email_objects)
+        # Update database with values
+        self.store_emails(email_objects)
 
         return email_objects
 
     @staticmethod
     def store_emails(email_values):
-        parameter_list = [i.get_values for i in email_values]
+        parameter_list = [i.get_values() for i in email_values]
 
         sql = """INSERT INTO email_store (harvested_date, sent_date, label_id, message_count, 
         gapi_email_id) VALUES (%s, %s, %s, %s, %s)"""
@@ -125,7 +126,8 @@ class Gapi:
         # Get data to feed into p_email constructor
         date_harvested = date.today()
         date_received = date.fromtimestamp(int(p_email['internalDate']) / 1000).isoformat()
-        email_body = base64.urlsafe_b64decode(p_email['payload']['body']['data'])
+        # todo - need to find a way to skip non-google-scholar emails
+        email_body = base64.urlsafe_b64decode(p_email['payload']['body'].get('data') or None)
         gapi_email_id = p_email['id']
         label = None
 
