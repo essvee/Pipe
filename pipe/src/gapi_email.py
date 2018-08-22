@@ -1,5 +1,4 @@
-from datetime import date
-
+#!/usr/bin/env python
 from bs4 import BeautifulSoup
 import unicodedata
 from pipe.src.message import Message
@@ -27,7 +26,7 @@ class GapiEmail(object):
 
             # Retrieve + parse bib_data
             sibling = i.next_sibling
-            bib_data = self.clean_string(sibling.text)
+            bib_data = sibling.text
             parsed_bib_data = self.parse_bib_data(bib_data)
 
             # Get snippet
@@ -69,8 +68,9 @@ class GapiEmail(object):
 
             else:
                 try:
-                    m_pub_year = self.clean_string(parsed_b2[0])
+                    m_pub_year = int(self.clean_string(parsed_b2[0]))
                 except ValueError:
+                    m_pub_year = None
                     m_pub_title = self.clean_string(parsed_b2[0])
 
         return {'m_author': m_author, 'm_pub_title': m_pub_title, 'm_pub_year': m_pub_year}
