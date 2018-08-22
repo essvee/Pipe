@@ -46,13 +46,19 @@ class Gapi:
 
     @staticmethod
     def store_emails(email_values):
-        parameter_list = [i.get_values() for i in email_values]
+        email_parameters = [i.get_values() for i in email_values]
 
-        sql = """INSERT INTO email_store (harvested_date, sent_date, label_id, message_count, 
-        gapi_email_id) VALUES (%s, %s, %s, %s, %s)"""
+        # for each email object, get the message object and add the tuple values to list
+        message_parameters = []
+        #
+        # for i in email_values:
+        #     i.messages
+
+        email_sql = """INSERT INTO email_store (email_id, harvested_date, sent_date, label_id, message_count) 
+        VALUES (%s, %s, %s, %s, %s)"""
 
         u = Util()
-        u.update_db(sql, parameter_list)
+        u.update_db(email_sql, email_parameters)
 
         return
 
@@ -141,7 +147,7 @@ class Gapi:
 
         # Create Email object and return
         email_obj = GapiEmail(harvested_date=date_harvested, sent_date=date_received, email_body=email_body,
-                              gapi_email_id=gapi_email_id, label=label)
+                              email_id=gapi_email_id, label=label)
         return email_obj
 
     @staticmethod

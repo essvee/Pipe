@@ -6,12 +6,11 @@ from pipe.src.message import Message
 
 
 class GapiEmail(object):
-    def __init__(self, harvested_date, sent_date, email_body, gapi_email_id, email_id=None, label=None):
+    def __init__(self, harvested_date, sent_date, email_body, email_id, label=None):
         self.harvested_date = harvested_date.strftime('%Y-%m-%d')
         self.sent_date = sent_date
         self.email_body = email_body
         self.email_id = email_id
-        self.gapi_email_id = gapi_email_id
         self.label_id = label
         self.messages = self.extract_messages()
         self.email_count = len(self.messages)
@@ -47,7 +46,6 @@ class GapiEmail(object):
                                         m_pub_title=parsed_bib_data['m_pub_title'],
                                         m_pub_year=parsed_bib_data['m_pub_year'],
                                         label=self.label_id,
-                                        gapi_email_id=self.gapi_email_id,
                                         email_id=self.email_id))
 
         return all_messages
@@ -83,5 +81,5 @@ class GapiEmail(object):
 
     # Returns field values as tuple
     def get_values(self):
-        return (self.harvested_date, self.sent_date, self.label_id,
-                self.email_count, self.gapi_email_id)
+        return (self.email_id, self.harvested_date, self.sent_date, self.label_id,
+                self.email_count)
