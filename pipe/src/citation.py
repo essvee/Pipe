@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from dataclasses import dataclass
 from datetime import date
 from pipe.src.message import Message

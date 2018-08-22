@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import re
 from datetime import date
 
@@ -40,7 +39,7 @@ class Gapi:
 
         # Update database with values + mark emails as read
         self.store_emails(email_objects)
-        self.mark_read(service, unread_emails)
+        # self.mark_read(service, unread_emails)
 
         return email_objects
 
@@ -50,15 +49,20 @@ class Gapi:
 
         # for each email object, get the message object and add the tuple values to list
         message_parameters = []
-        #
-        # for i in email_values:
-        #     i.messages
+
+        for e in email_values:
+            message_parameters.extend([m.get_message_values_tuple() for m in e.messages])
+
 
         email_sql = """INSERT INTO email_store (email_id, harvested_date, sent_date, label_id, message_count) 
         VALUES (%s, %s, %s, %s, %s)"""
 
+        message_sql = """INSERT INTO message_store (email_id, citation_format, title, bib_data, snippet, m_author, 
+        m_pub_title, m_pub_year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+
         u = Util()
         u.update_db(email_sql, email_parameters)
+        u.update_db(message_sql, message_parameters)
 
         return
 
@@ -135,7 +139,7 @@ class Gapi:
         date_harvested = date.today()
         date_received = date.fromtimestamp(int(p_email['internalDate']) / 1000).isoformat()
         email_body = base64.urlsafe_b64decode(p_email['payload']['body'].get('data') or None)
-        gapi_email_id = p_email['id']
+        email_id = p_email['id']
         label = None
 
         # Go through labels looking for custom ones
@@ -147,7 +151,7 @@ class Gapi:
 
         # Create Email object and return
         email_obj = GapiEmail(harvested_date=date_harvested, sent_date=date_received, email_body=email_body,
-                              email_id=gapi_email_id, label=label)
+                              email_id=email_id, label=label)
         return email_obj
 
     @staticmethod
