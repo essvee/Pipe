@@ -83,8 +83,5 @@ class GapiEmail(object):
 
     # Returns field values as tuple
     def get_values(self):
-        print(f"{self.harvested_date}, {self.sent_date}, {self.label_id}, "
-              f"{self.email_count}, {self.gapi_email_id}")
-
         return (self.harvested_date, self.sent_date, self.label_id,
                 self.email_count, self.gapi_email_id)
