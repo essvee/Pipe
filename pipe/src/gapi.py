@@ -18,8 +18,8 @@ from pipe.src.util import Util
 class Gapi:
     def __init__(self):
         # If modified, delete previously saved credentials at ~/.credentials/gmail-credentials.json
-        self.__SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
-        self.__CLIENT_SECRET_FILE = 'client_secret.json'
+        self.__SCOPES = 'https://www.googleapis.com/auth/gmail.modify'
+        self.__CLIENT_SECRET_FILE = '/Users/essvee/Documents/Project/Pipe/pipe/src/client_secret.json'
         self.__APPLICATION_NAME = 'DCP Pipeline'
 
     def main(self):
@@ -38,8 +38,9 @@ class Gapi:
             email_obj = self.parse_email(full_email)
             email_objects.append(email_obj)
 
-        # Update database with values
+        # Update database with values + mark emails as read
         self.store_emails(email_objects)
+        self.mark_read(service, unread_emails)
 
         return email_objects
 
@@ -50,11 +51,10 @@ class Gapi:
         sql = """INSERT INTO email_store (harvested_date, sent_date, label_id, message_count, 
         gapi_email_id) VALUES (%s, %s, %s, %s, %s)"""
 
-        print(parameter_list)
-
         u = Util()
         u.update_db(sql, parameter_list)
 
+        return
 
     def get_credentials(self):
         """Gets user credentials from storage.
@@ -86,6 +86,7 @@ class Gapi:
         service = discovery.build('gmail', 'v1', http=http)
         return service
 
+
     @staticmethod
     def list_unread_emails(service):
         """Lists all unread emails in the user's mailbox ,
@@ -93,7 +94,8 @@ class Gapi:
         :return: List of email IDs
         """
         try:
-            response = service.users().messages().list(userId='me', q='is:unread').execute()
+            response = service.users().messages()\
+                .list(userId='me', q='is:unread from:scholaralerts-noreply@google.com', ).execute()
             p_emails = []
             if 'messages' in response:
                 p_emails.extend(response['messages'])
@@ -126,7 +128,6 @@ class Gapi:
         # Get data to feed into p_email constructor
         date_harvested = date.today()
         date_received = date.fromtimestamp(int(p_email['internalDate']) / 1000).isoformat()
-        # todo - need to find a way to skip non-google-scholar emails
         email_body = base64.urlsafe_b64decode(p_email['payload']['body'].get('data') or None)
         gapi_email_id = p_email['id']
         label = None
@@ -142,3 +143,11 @@ class Gapi:
         email_obj = GapiEmail(harvested_date=date_harvested, sent_date=date_received, email_body=email_body,
                               gapi_email_id=gapi_email_id, label=label)
         return email_obj
+
+    @staticmethod
+    def mark_read(service, unread_email_ids):
+        # Updates messages to remove 'unread' label
+        read_email_ids = [e['id'] for e in unread_email_ids]
+        service.users().messages()\
+            .batchModify(userId='me', body={'removeLabelIds': ['UNREAD'], 'ids': read_email_ids}).execute()
+        return
