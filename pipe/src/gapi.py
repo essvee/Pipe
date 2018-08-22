@@ -39,7 +39,7 @@ class Gapi:
 
         # Update database with values + mark emails as read
         self.store_emails(email_objects)
-        # self.mark_read(service, unread_emails)
+        self.mark_read(service, unread_emails)
 
         return email_objects
 

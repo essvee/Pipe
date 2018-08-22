@@ -26,7 +26,7 @@ class GapiEmail(object):
 
             # Retrieve + parse bib_data
             sibling = i.next_sibling
-            bib_data = sibling.text
+            bib_data = self.clean_string(sibling.text)
             parsed_bib_data = self.parse_bib_data(bib_data)
 
             # Get snippet
@@ -55,7 +55,7 @@ class GapiEmail(object):
         m_pub_year = None
 
         # Get author name(s)
-        parsed_bib = bib_data.split(' - ')
+        parsed_bib = bib_data.split(" - ")
         m_author = self.clean_string(parsed_bib[0])
 
         # Split further to get year and author - TODO improve this. regex?
