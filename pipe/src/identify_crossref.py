@@ -1,4 +1,5 @@
 import json
+from datetime import date, datetime
 
 from habanero import Crossref
 from fuzzywuzzy import fuzz
@@ -29,15 +30,34 @@ class IdentifyCrossRef:
                 break
 
             # Title according to crossref (i.e., best match returned)
-            cr_title = crossref_result['message']['items'][0]['title'][0]
+            best_match = crossref_result['message']['items'][0]
+            cr_title = best_match['title'][0]
 
             score = fuzz.partial_ratio(message.title, cr_title)
             if score > 90:
-                print('wooo')
+                citation_obj = Citation(cr_title=best_match['title'],
+                                        cr_type=best_match['type'],
+                                        cr_doi=best_match['doi'],
+                                        cr_content_version=best_match['license']['content-version'],
+                                        cr_issue=best_match['issue'],
+                                        cr_volume=best_match['volume'],
+                                        cr_page=best_match['page'],
+                                        cr_pub_publisher=best_match['publisher'],
+                                        cr_pub_title=best_match['container-title'],
+                                        pub_issn=best_match['issn'][0],
+                                        pub_isbn=best_match['isbn'][0],
+                                        cr_url=best_match['link'],
+                                        cr_issued=date(*map(int, best_match['issued']['date-parts'][0])),
+                                        # todo - authors
+                                        # todo - subjects
+                                        )
 
-            print(json.dumps(crossref_result, indent=2))
+            # print(json.dumps(crossref_result, indent=2))
 
         return crossref_results
+
+    def date_parts(self, date_parts):
+        return date(*map(int, date_parts))
 
     def make_citation(self, message_id, crossref_result):
         candidate = Citation()
