@@ -4,26 +4,32 @@ import unicodedata
 from pipe.src.message import Message
 
 
-class GapiEmail(object):
-    def __init__(self, harvested_date, sent_date, email_body, email_id, label=None):
-        self.harvested_date = harvested_date.strftime('%Y-%m-%d')
+class MessageFactory(object):
+    def __init__(self, source, harvested_date, sent_date, email_body, email_id, label_id=None):
+        self.source = source
+        self.harvested_date = harvested_date
         self.sent_date = sent_date
         self.email_body = email_body
         self.email_id = email_id
-        self.label_id = label
-        self.messages = self.extract_messages()
-        self.email_count = len(self.messages)
+        self.label_id = label_id
 
-    def extract_messages(self):
+    def main(self):
         # Turn body of email into html object
         soup = BeautifulSoup(self.email_body, 'html.parser')
+
+        if self.source == 'GS':
+            all_messages = self.parse_gmail(soup)
+        else:
+            all_messages = None
+
+        return all_messages
+
+    def parse_gmail(self, soup):
         h3 = soup("h3")
 
         all_messages = []
 
         for i in h3:
-            citation_format = i.span.text if i.span in i else 'UNKNOWN'
-
             # Retrieve + parse bib_data
             sibling = i.next_sibling
             bib_data = self.clean_string(sibling.text)
@@ -37,15 +43,17 @@ class GapiEmail(object):
             title = self.clean_string(i.find('a', class_="gse_alrt_title").text)
 
             # Build message object + add to list
-            all_messages.append(Message(citation_format=citation_format,
+            all_messages.append(Message(email_id=self.email_id,
+                                        harvested_date=self.harvested_date,
+                                        sent_date=self.sent_date,
+                                        source=self.source,
                                         title=title,
-                                        bib_data=bib_data,
                                         snippet=snippet_clean,
                                         m_author=parsed_bib_data['m_author'],
                                         m_pub_title=parsed_bib_data['m_pub_title'],
                                         m_pub_year=parsed_bib_data['m_pub_year'],
-                                        label=self.label_id,
-                                        email_id=self.email_id))
+                                        label=self.label_id
+                                        ))
 
         return all_messages
 
@@ -78,8 +86,3 @@ class GapiEmail(object):
     @staticmethod
     def clean_string(string):
         return unicodedata.normalize("NFKD", string).replace("...", "").strip()
-
-    # Returns field values as tuple
-    def get_values(self):
-        return (self.email_id, self.harvested_date, self.sent_date, self.label_id,
-                self.email_count)

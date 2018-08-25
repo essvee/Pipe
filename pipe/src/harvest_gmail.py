@@ -10,11 +10,10 @@ from oauth2client.file import Storage
 import base64
 import argparse
 
-from pipe.src.gapi_email import GapiEmail
-from pipe.src.util import Util
+from pipe.src.message_factory import MessageFactory
 
 
-class Gapi:
+class HarvestGmail:
     def __init__(self):
         # If modified, delete previously saved credentials at ~/.credentials/gmail-credentials.json
         self.__SCOPES = 'https://www.googleapis.com/auth/gmail.modify'
@@ -29,42 +28,30 @@ class Gapi:
         unread_emails = self.list_unread_emails(service)
 
         # List to hold gapi_emails
-        email_objects = []
+        message_objects = []
+        date_harvested = date.today()
 
-        # For each email, get the full text, parse and convert to gapi_email objects
+        # Parse each email and send to MessageFactory for construction of message list
         for n in unread_emails:
-            full_email = self.get_email_full(service, n['id'])
-            email_obj = self.parse_email(full_email)
-            email_objects.append(email_obj)
+            email_id, label, date_sent, email_body = self.email_metadata(service, n)
+            messages = MessageFactory(email_id=email_id, label_id=label, sent_date=date_sent,
+                                      email_body=email_body, source='GS', harvested_date=date_harvested).main()
 
-        # Update database with values + mark emails as read
-        self.store_emails(email_objects)
+            message_objects.extend(messages)
+
+        # Mark emails as read
         self.mark_read(service, unread_emails)
 
-        return email_objects
+        return message_objects
 
-    @staticmethod
-    def store_emails(email_values):
-        email_parameters = [i.get_values() for i in email_values]
+    def email_metadata(self, service, email):
+        full_email = self.get_email_full(service, email['id'])
+        email_id = full_email['id']
+        label = self.get_label(full_email)
+        date_received = date.fromtimestamp(int(full_email['internalDate']) / 1000).isoformat()
+        email_body = base64.urlsafe_b64decode(full_email['payload']['body'].get('data') or None)
 
-        # for each email object, get the message object and add the tuple values to list
-        message_parameters = []
-
-        for e in email_values:
-            message_parameters.extend([m.get_message_values_tuple() for m in e.messages])
-
-
-        email_sql = """INSERT INTO email_store (email_id, harvested_date, sent_date, label_id, message_count) 
-        VALUES (%s, %s, %s, %s, %s)"""
-
-        message_sql = """INSERT INTO message_store (email_id, citation_format, title, bib_data, snippet, m_author, 
-        m_pub_title, m_pub_year) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
-
-        u = Util()
-        u.update_db(email_sql, email_parameters)
-        u.update_db(message_sql, message_parameters)
-
-        return
+        return email_id, label, date_received, email_body
 
     def get_credentials(self):
         """Gets user credentials from storage.
@@ -95,7 +82,6 @@ class Gapi:
         http = credentials.authorize(httplib2.Http())
         service = discovery.build('gmail', 'v1', http=http)
         return service
-
 
     @staticmethod
     def list_unread_emails(service):
@@ -134,25 +120,17 @@ class Gapi:
             print(f'An error occurred during full-text message retrieval: {error}')
 
     @staticmethod
-    def parse_email(p_email):
-        # Get data to feed into p_email constructor
-        date_harvested = date.today()
-        date_received = date.fromtimestamp(int(p_email['internalDate']) / 1000).isoformat()
-        email_body = base64.urlsafe_b64decode(p_email['payload']['body'].get('data') or None)
-        email_id = p_email['id']
+    def get_label(g_email):
         label = None
 
         # Go through labels looking for custom ones
-        for lab in p_email['labelIds']:
+        for lab in g_email['labelIds']:
             match = re.match("Label", lab)
             if match:
                 label = lab
                 break
 
-        # Create Email object and return
-        email_obj = GapiEmail(harvested_date=date_harvested, sent_date=date_received, email_body=email_body,
-                              email_id=email_id, label=label)
-        return email_obj
+        return label
 
     @staticmethod
     def mark_read(service, unread_email_ids):

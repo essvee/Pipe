@@ -2,3 +2,4 @@ venv
 .idea
 client_secret.json
 Icon
+server-permissions.txt

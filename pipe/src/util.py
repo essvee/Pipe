@@ -34,6 +34,11 @@ class Util:
             except pymysql.Error as e:
                 print(e)
 
+    def get_messages(self):
+        sql = "SELECT * FROM message_store"
+        cursor = self.query_db(sql)
+
+
     @staticmethod
     def get_keys(filename):
         """
@@ -45,14 +50,17 @@ class Util:
             keys = f.read().splitlines()
             return keys
 
-    def update_db(self, sql, row_data):
+    def write_new(self, sql, objects):
         """
         Batch write to mySQL database
         :param sql: String script
-        :param row_data: List of parameters to be used with the query
+        :param objects: List of message or citation objects to be written to db
         :return: Cursor
         """
+        row_data = [i.get_values() for i in objects]
+
         host, user, password, database = self.get_keys('server-permissions.txt')
+
         with pymysql.connect(host=host, user=user, password=password, db=database) as cursor:
             try:
                 cursor.executemany(sql, row_data)
