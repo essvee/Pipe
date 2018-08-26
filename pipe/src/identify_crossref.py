@@ -1,5 +1,4 @@
-import json
-from datetime import date, datetime
+from datetime import date
 
 from habanero import Crossref
 from fuzzywuzzy import fuzz
@@ -21,9 +20,9 @@ class IdentifyCrossRef:
         for message in self.messages:
             crossref_result = cr.works(query_title=message.title, query_author=message.m_author,
                                        query_container_title=message.m_pub_title, rows=1,
-                                       select='DOI,title,author,type,license,subject,container-title,'
+                                       select='DOI,title,author,type,subject,container-title,'
                                               'subject,publisher,issue,volume,page,ISSN,ISBN,published-online,'
-                                              'issued,abstract,link')
+                                              'issued,link')
 
             # Skip if no results returned
             if crossref_result['message']['total-results'] == 0:
@@ -35,29 +34,40 @@ class IdentifyCrossRef:
 
             score = fuzz.partial_ratio(message.title, cr_title)
             if score > 90:
-                citation_obj = Citation(cr_title=best_match['title'],
-                                        cr_type=best_match['type'],
-                                        cr_doi=best_match['doi'],
-                                        cr_content_version=best_match['license']['content-version'],
-                                        cr_issue=best_match['issue'],
-                                        cr_volume=best_match['volume'],
-                                        cr_page=best_match['page'],
-                                        cr_pub_publisher=best_match['publisher'],
-                                        cr_pub_title=best_match['container-title'],
-                                        pub_issn=best_match['issn'][0],
-                                        pub_isbn=best_match['isbn'][0],
-                                        cr_url=best_match['link'],
-                                        cr_issued=date(*map(int, best_match['issued']['date-parts'][0])),
-                                        # todo - authors
-                                        # todo - subjects
+                citation_obj = Citation(cr_title=best_match['title'][0],
+                                        cr_type=best_match.get('type'),
+                                        cr_doi=best_match.get('DOI'),
+                                        cr_issue=best_match.get('issue'),
+                                        cr_volume=best_match.get('volume'),
+                                        cr_page=best_match.get('page'),
+                                        cr_pub_publisher=best_match.get('publisher'),
+                                        cr_pub_title=best_match['container-title'][0] if 'container-title' in best_match else None,
+                                        pub_issn=best_match['ISSN'][0] if 'ISSN' in best_match else None,
+                                        pub_isbn=best_match['ISBN'][0] if 'ISBN' in best_match else None,
+                                        cr_issued_date=self.partialDate(best_match.get('issued').get('date-parts')),
+                                        cr_author=self.concatenate_authors(best_match.get('author')),
+                                        cr_subject=",".join(best_match['subject']) if 'subject' in best_match else None
                                         )
 
+                print(citation_obj)
             # print(json.dumps(crossref_result, indent=2))
 
         return crossref_results
 
-    def date_parts(self, date_parts):
-        return date(*map(int, date_parts))
+    def partialDate(self, part_date):
+        if len(part_date[0]) == 3:
+            return date(part_date[0][0], part_date[0][1], part_date[0][2])
+        elif len(part_date[0]) == 2:
+            return date(part_date[0][0], part_date[0][1], 1)
+        elif len(part_date[0]) == 1:
+            return date(part_date[0][0], 7, 1)
+        else:
+            return None
+
+
+    @staticmethod
+    def concatenate_authors(authors):
+        return "; ".join([", ".join((n['family'], n['given'])) for n in authors]) if authors is not None else None
 
     def make_citation(self, message_id, crossref_result):
         candidate = Citation()
