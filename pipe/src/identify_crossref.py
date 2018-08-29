@@ -14,8 +14,7 @@ class IdentifyCrossRef:
     def get_crossref_match(self):
         cr = Crossref()
         cr.mailto = self.mail_to
-        crossref_results = []
-        suspicious_match = []
+        identified_citations = {}
 
         for message in self.messages:
             crossref_result = cr.works(query_title=message.title, query_author=message.m_author,
@@ -26,33 +25,44 @@ class IdentifyCrossRef:
 
             # Skip if no results returned
             if crossref_result['message']['total-results'] == 0:
-                break
+                continue
 
             # Title according to crossref (i.e., best match returned)
             best_match = crossref_result['message']['items'][0]
             cr_title = best_match['title'][0]
 
             score = fuzz.partial_ratio(message.title, cr_title)
+
             if score > 90:
-                citation_obj = Citation(cr_title=best_match['title'][0],
-                                        cr_type=best_match.get('type'),
-                                        cr_doi=best_match.get('DOI'),
-                                        cr_issue=best_match.get('issue'),
-                                        cr_volume=best_match.get('volume'),
-                                        cr_page=best_match.get('page'),
-                                        cr_pub_publisher=best_match.get('publisher'),
-                                        cr_pub_title=best_match['container-title'][0] if 'container-title' in best_match else None,
-                                        pub_issn=best_match['ISSN'][0] if 'ISSN' in best_match else None,
-                                        pub_isbn=best_match['ISBN'][0] if 'ISBN' in best_match else None,
-                                        cr_issued_date=self.partialDate(best_match.get('issued').get('date-parts')),
-                                        cr_author=self.concatenate_authors(best_match.get('author')),
-                                        cr_subject=",".join(best_match['subject']) if 'subject' in best_match else None
-                                        )
+                cr_doi = best_match.get('DOI')
 
-                print(citation_obj)
-            # print(json.dumps(crossref_result, indent=2))
+                if cr_doi is None:
+                    continue
 
-        return crossref_results
+                # Need to hang onto the message id to update message_store with doi FK
+                elif cr_doi in identified_citations:
+                    identified_citations[cr_doi].message_ids.append(message.message_id)
+
+                else:
+                    result = Citation(cr_title=best_match['title'][0],
+                                     cr_type=best_match.get('type'),
+                                     cr_doi=best_match.get('DOI'),
+                                     cr_issue=best_match.get('issue'),
+                                     cr_volume=best_match.get('volume'),
+                                     cr_page=best_match.get('page'),
+                                     cr_pub_publisher=best_match.get('publisher'),
+                                     cr_pub_title=best_match['container-title'][0] if 'container-title' in best_match else None,
+                                     pub_issn=best_match['ISSN'][0] if 'ISSN' in best_match else None,
+                                     pub_isbn=best_match['ISBN'][0] if 'ISBN' in best_match else None,
+                                     cr_issued_date=self.partialDate(best_match.get('issued').get('date-parts')),
+                                     message_ids=[message.message_id],
+                                     cr_author=self.concatenate_authors(best_match.get('author')),
+                                     cr_subject=",".join(best_match['subject']) if 'subject' in best_match else None
+                                     )
+
+                    identified_citations[cr_doi] = result
+
+        return identified_citations
 
     def partialDate(self, part_date):
         if len(part_date[0]) == 3:
@@ -67,11 +77,4 @@ class IdentifyCrossRef:
 
     @staticmethod
     def concatenate_authors(authors):
-        return "; ".join([", ".join((n['family'], n['given'])) for n in authors]) if authors is not None else None
-
-    def make_citation(self, message_id, crossref_result):
-        candidate = Citation()
-
-    def validate_match(self):
-        # TODO implement this method
-        pass
+        return "; ".join([", ".join((n.get('family', ''), n.get('given', ''))) for n in authors]) if authors is not None else None
