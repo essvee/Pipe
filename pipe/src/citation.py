@@ -10,6 +10,7 @@ class Citation:
     cr_title: str
     cr_type: str
     cr_issued_date: date
+    message_ids: list
     cr_subject: str = None
     cr_pub_title: str = None
     cr_pub_publisher: str = None
@@ -18,3 +19,10 @@ class Citation:
     cr_issue: str = None
     cr_volume: str = None
     cr_page: str = None
+    classification_id: str = None
+    nhm_sub: int = 0
+
+    def get_values(self):
+        return (self.cr_author, self.cr_doi, self.cr_title, self.cr_type, self.cr_issued_date, self.cr_subject,
+                self.cr_pub_title, self.cr_pub_publisher, self.pub_issn, self.pub_isbn, self.cr_issue, self.cr_volume,
+                self.cr_page, self.classification_id, self.nhm_sub)
