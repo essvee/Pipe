@@ -9,10 +9,10 @@ from pipe.src.util import Util
 a = datetime.now()
 u = Util()
 
-# todo - uncomment this when crossref module working
 # Get Message objects from Gmail
 messages = harvest_gmail.HarvestGmail().main()
 
+# Only process if there are unread emails
 if messages:
     # Write messages to database
     message_sql = """INSERT INTO message_store (email_id, title, snippet, m_author, m_pub_title, m_pub_year, sent_date,
@@ -39,7 +39,6 @@ if messages:
                                  identification_status=i[10],
                                  label=i[11]
                                  ) for i in mystery_messages]
-
 
     cr_i = IdentifyCrossRef(checklist)
     identified_citations = cr_i.get_crossref_match()

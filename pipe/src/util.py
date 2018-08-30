@@ -50,7 +50,7 @@ class Util:
             keys = f.read().splitlines()
             return keys
 
-    def write_new(self, sql, objects):
+    def write_new_objects(self, sql, objects):
         """
         Batch write to mySQL database
         :param sql: String script
@@ -59,6 +59,22 @@ class Util:
         """
         row_data = [i.get_values() for i in objects]
 
+        host, user, password, database = self.get_keys('server-permissions.txt')
+
+        with pymysql.connect(host=host, user=user, password=password, db=database) as cursor:
+            try:
+                cursor.executemany(sql, row_data)
+                return cursor
+            except pymysql.Error as e:
+                print(e)
+
+    def write_new_normals(self, sql, row_data):
+        """
+        Batch write to mySQL database
+        :param sql: String script
+        :param objects: List of message or citation objects to be written to db
+        :return: Cursor
+        """
         host, user, password, database = self.get_keys('server-permissions.txt')
 
         with pymysql.connect(host=host, user=user, password=password, db=database) as cursor:
