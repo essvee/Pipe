@@ -31,16 +31,17 @@ class HarvestGmail:
         message_objects = []
         date_harvested = date.today()
 
-        # Parse each email and send to MessageFactory for construction of message list
-        for n in unread_emails:
-            email_id, label, date_sent, email_body = self.email_metadata(service, n)
-            messages = MessageFactory(email_id=email_id, label_id=label, sent_date=date_sent,
-                                      email_body=email_body, source='GS', harvested_date=date_harvested).main()
+        if unread_emails:
+            # Parse each email and send to MessageFactory for construction of message list
+            for n in unread_emails:
+                email_id, label, date_sent, email_body = self.email_metadata(service, n)
+                messages = MessageFactory(email_id=email_id, label_id=label, sent_date=date_sent,
+                                          email_body=email_body, source='GS', harvested_date=date_harvested).main()
 
-            message_objects.extend(messages)
+                message_objects.extend(messages)
 
-        # Mark emails as read
-        self.mark_read(service, unread_emails)
+            # Mark emails as read
+            self.mark_read(service, unread_emails)
 
         return message_objects
 
