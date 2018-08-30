@@ -20,6 +20,14 @@ class Util:
             except AttributeError as error:
                 print(error.__repr__())
 
+    # Method to load manually-gathered candidates from csv
+    def read_message_from_csv(self, filename):
+        with open(filename, 'r') as csvfile:
+            reader = csv.DictReader(csvfile, dialect='excel')
+            results = [row for row in reader]
+            print(results)
+            return results
+
     def query_db(self, sql):
         """
         Read and write from mySQL database
