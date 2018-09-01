@@ -16,8 +16,6 @@ class IdentifyCrossRef:
         harvest_date = date.today().strftime('%Y-%m-%d')
 
         for message in self.messages:
-            print(f"Starting crossref check for {message.title}. id: {message.message_id}")
-
             crossref_result = cr.works(query_title=message.title,
                                        query_author=message.m_author,
                                        query_container_title=message.m_pub_title, rows=1,
@@ -48,7 +46,6 @@ class IdentifyCrossRef:
                     unidentified_citations.append((harvest_date, message.message_id))
 
                 else:
-                    print(best_match['issued'])
                     result = Citation(cr_title=best_match['title'][0],
                                       cr_type=best_match.get('type'),
                                       cr_doi=best_match.get('DOI'),
