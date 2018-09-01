@@ -35,9 +35,15 @@ class MessageFactory(object):
             bib_data = self.clean_string(sibling.text)
             parsed_bib_data = self.parse_bib_data(bib_data)
 
-            # Get snippet
+            # Get snippet + any bolded text
             snippet = sibling.next_sibling
+            bold_tags = None if snippet.find_all('b') is None else " ".join((set([i.text for i in snippet.find_all('b')])))
+
             snippet_clean = self.clean_string(" ".join(snippet.stripped_strings))
+            bold_index = snippet_clean.find(bold_tags)
+            if bold_index >= 0:
+                match_context = snippet_clean[bold_index - 30: bold_index + 40]
+                # todo - update database + message objects to hold context and run over inbox again
 
             # Get title
             title = self.clean_string(i.find('a', class_="gse_alrt_title").text)
