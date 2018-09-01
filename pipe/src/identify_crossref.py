@@ -3,7 +3,6 @@ from habanero import Crossref
 from fuzzywuzzy import fuzz
 from pipe.src.citation import Citation
 
-
 class IdentifyCrossRef:
     def __init__(self, messages):
         self.messages = messages
@@ -13,9 +12,14 @@ class IdentifyCrossRef:
         cr = Crossref()
         cr.mailto = self.mail_to
         identified_citations = {}
+        unidentified_citations = []
+        harvest_date = date.today().strftime('%Y-%m-%d')
 
         for message in self.messages:
-            crossref_result = cr.works(query_title=message.title, query_author=message.m_author,
+            print(f"Starting crossref check for {message.title}. id: {message.message_id}")
+
+            crossref_result = cr.works(query_title=message.title,
+                                       query_author=message.m_author,
                                        query_container_title=message.m_pub_title, rows=1,
                                        select='DOI,title,author,type,subject,container-title,'
                                               'subject,publisher,issue,volume,page,ISSN,ISBN,published-online,'
@@ -23,6 +27,7 @@ class IdentifyCrossRef:
 
             # Skip if no results returned
             if crossref_result['message']['total-results'] == 0:
+                unidentified_citations.append((harvest_date, message.message_id))
                 continue
 
             # Compare original title to title of best match returned by CrossRef
@@ -35,13 +40,15 @@ class IdentifyCrossRef:
                 cr_doi = best_match.get('DOI')
 
                 if cr_doi is None:
+                    unidentified_citations.append((harvest_date, message.message_id))
                     continue
 
                 # If already seen, store the message id to update message in message_store with doi FK
                 elif cr_doi in identified_citations:
-                    identified_citations[cr_doi].message_ids.append(message.message_id)
+                    unidentified_citations.append((harvest_date, message.message_id))
 
                 else:
+                    print(best_match['issued'])
                     result = Citation(cr_title=best_match['title'][0],
                                       cr_type=best_match.get('type'),
                                       cr_doi=best_match.get('DOI'),
@@ -60,12 +67,16 @@ class IdentifyCrossRef:
                                       )
 
                     identified_citations[cr_doi] = result
+            else:
+                unidentified_citations.append((harvest_date, message.message_id))
 
-        return identified_citations
+        return identified_citations, unidentified_citations
 
     @staticmethod
     def partial_date(part_date):
-        if len(part_date[0]) == 3:
+        if part_date[0][0] is None:
+            return None
+        elif len(part_date[0]) == 3:
             return date(part_date[0][0], part_date[0][1], part_date[0][2])
         elif len(part_date[0]) == 2:
             return date(part_date[0][0], part_date[0][1], 1)
