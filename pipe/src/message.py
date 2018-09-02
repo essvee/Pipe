@@ -15,11 +15,13 @@ class Message:
     sent_date: date
     harvested_date: date
     source: str
+    snippet_match: bool
     identification_status: bool = False
     message_id: int = None
     doi: str = None
+    match_context: str = None
 
     def get_values(self):
         return (self.email_id, self.title, self.snippet, self.m_author, self.m_pub_title, self.m_pub_year,
                 self.sent_date, self.harvested_date, self.source, self.identification_status, self.label,
-                self.doi)
+                self.doi, self.match_context, self.snippet_match)

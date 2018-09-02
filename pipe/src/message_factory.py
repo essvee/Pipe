@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import re
 
 from bs4 import BeautifulSoup
 import unicodedata

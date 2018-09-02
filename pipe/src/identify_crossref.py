@@ -3,6 +3,7 @@ from habanero import Crossref
 from fuzzywuzzy import fuzz
 from pipe.src.citation import Citation
 
+
 class IdentifyCrossRef:
     def __init__(self, messages):
         self.messages = messages
@@ -16,6 +17,7 @@ class IdentifyCrossRef:
         harvest_date = date.today().strftime('%Y-%m-%d')
 
         for message in self.messages:
+            print(f"checking crossref for... {message.title}")
             crossref_result = cr.works(query_title=message.title,
                                        query_author=message.m_author,
                                        query_container_title=message.m_pub_title, rows=1,
