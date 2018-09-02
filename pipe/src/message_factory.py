@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import re
+
 from bs4 import BeautifulSoup
 import unicodedata
 from pipe.src.message import Message
@@ -37,13 +39,21 @@ class MessageFactory(object):
 
             # Get snippet + any bolded text
             snippet = sibling.next_sibling
-            bold_tags = None if snippet.find_all('b') is None else " ".join((set([i.text for i in snippet.find_all('b')])))
 
+            # Get the first bit of bold text and all subsequent ones
+            bold_tag_start = None if snippet.find('b') is None else snippet.find('b').text
+            bold_tag_list = None if snippet.find_all('b') is None else (set([i.text.lower() for i in snippet.find_all('b')]))
+
+            # Check that bold words match scholar alerts
+            snippet_match = True if self.check_context(bold_tag_list) else False
+
+            # Extract the string around the bold text
             snippet_clean = self.clean_string(" ".join(snippet.stripped_strings))
-            bold_index = snippet_clean.find(bold_tags)
+            bold_index = snippet_clean.find(bold_tag_start) if bold_tag_start else -1
             if bold_index >= 0:
-                match_context = snippet_clean[bold_index - 30: bold_index + 40]
-                # todo - update database + message objects to hold context and run over inbox again
+                match_context = snippet_clean[bold_index - 10: bold_index + 40]
+            else:
+                match_context = None
 
             # Get title
             title = self.clean_string(i.find('a', class_="gse_alrt_title").text)
@@ -58,10 +68,24 @@ class MessageFactory(object):
                                         m_author=parsed_bib_data['m_author'],
                                         m_pub_title=parsed_bib_data['m_pub_title'],
                                         m_pub_year=parsed_bib_data['m_pub_year'],
-                                        label=self.label_id
+                                        label=self.label_id,
+                                        match_context=match_context,
+                                        snippet_match=snippet_match
                                         ))
 
         return all_messages
+
+    @staticmethod
+    def check_context(bold_tag_list):
+        if bold_tag_list:
+            nhm_name = {"natural", "history", "museum", "london"}
+            label_patterns = ["nhmuk", "nhml", "bmnh", "bm nh", "nh bm", "bmnh e", "e bmnh", "10.5519"]
+            tag = " ".join(bold_tag_list)
+
+            if bold_tag_list == nhm_name or tag in label_patterns:
+                return True
+            else:
+                return False
 
     def parse_bib_data(self, bib_data):
         m_author = None
