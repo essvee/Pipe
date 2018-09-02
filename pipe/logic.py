@@ -12,11 +12,13 @@ u = Util()
 # Get Message objects from Gmail
 messages = harvest_gmail.HarvestGmail().main()
 
+# TODO uncomment when highlight extraction working
 # Only process if there are unread emails
 if messages:
     # Write messages to database
     message_sql = """INSERT INTO message_store (email_id, title, snippet, m_author, m_pub_title, m_pub_year, sent_date,
-    harvested_date, source, id_status, label_id, doi) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+    harvested_date, source, id_status, label_id, doi, match_context, snippet_match) VALUES (%s, %s, %s, %s, %s, %s, 
+    %s, %s, %s, %s, %s, %s, %s, %s)"""
 
     u.write_new_objects(message_sql, messages)
 
@@ -39,7 +41,9 @@ else:
                                  harvested_date=i[8],
                                  source=i[9],
                                  identification_status=i[10],
-                                 label=i[11]
+                                 label=i[11],
+                                 match_context=i[13],
+                                 snippet_match=i[14]
                                  ) for i in mystery_messages]
 
     cr_i = IdentifyCrossRef(checklist)
