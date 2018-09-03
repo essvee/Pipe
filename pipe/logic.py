@@ -12,7 +12,6 @@ u = Util()
 # Get Message objects from Gmail
 messages = harvest_gmail.HarvestGmail().main()
 
-# TODO uncomment when highlight extraction working
 # Only process if there are unread emails
 if messages:
     # Write messages to database
