@@ -15,7 +15,7 @@ class Message:
     sent_date: date
     harvested_date: date
     source: str
-    snippet_match: bool
+    snippet_match: bool = False
     identification_status: bool = False
     message_id: int = None
     doi: str = None
