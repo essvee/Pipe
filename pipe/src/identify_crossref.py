@@ -17,7 +17,7 @@ class IdentifyCrossRef:
         harvest_date = date.today().strftime('%Y-%m-%d')
 
         for message in self.messages:
-            print(f"checking crossref for... {message.title}")
+            print(f"Fetching crossref info for {message.title}: {message.message_id}")
             crossref_result = cr.works(query_title=message.title,
                                        query_author=message.m_author,
                                        query_container_title=message.m_pub_title, rows=1,
@@ -36,7 +36,7 @@ class IdentifyCrossRef:
             score = fuzz.partial_ratio(message.title, cr_title)
 
             # If similar, use to create Citation
-            if score > 90:
+            if score >= 90:
                 cr_doi = best_match.get('DOI')
 
                 if cr_doi is None:
@@ -45,8 +45,7 @@ class IdentifyCrossRef:
 
                 # If already seen, store the message id to update message in message_store with doi FK
                 elif cr_doi in identified_citations:
-                    unidentified_citations.append((harvest_date, message.message_id))
-
+                    identified_citations[cr_doi].message_ids.append(message.message_id)
                 else:
                     result = Citation(cr_title=best_match['title'][0],
                                       cr_type=best_match.get('type'),
