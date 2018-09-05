@@ -38,21 +38,20 @@ class MessageFactory(object):
 
             # Get snippet + any bolded text
             snippet = sibling.next_sibling
+            snippet_clean = self.clean_string(" ".join(snippet.stripped_strings))
 
-            # Get the first bit of bold text and all subsequent ones
-            bold_tag_start = None if snippet.find('b') is None else snippet.find('b').text
-            bold_tag_list = None if snippet.find_all('b') is None else (set([i.text.lower() for i in snippet.find_all('b')]))
+            # Get a list of all bold text
+            bold_tag_list = None if snippet.find_all('b') is None else [i.text for i in snippet.find_all('b')]
+
+            # Get distance apart between first and last highlighted term in snippet
+            second_bold, first_bold = self.get_indices(bold_tag_list, snippet_clean)
+            distance_apart = second_bold - first_bold
 
             # Check that bold words match scholar alerts
-            snippet_match = True if self.check_context(bold_tag_list) else False
+            snippet_match = self.check_context(bold_tag_list)
 
             # Extract the string around the bold text
-            snippet_clean = self.clean_string(" ".join(snippet.stripped_strings))
-            bold_index = snippet_clean.find(bold_tag_start) if bold_tag_start else -1
-            if bold_index >= 0:
-                match_context = snippet_clean[bold_index - 10: bold_index + 40]
-            else:
-                match_context = None
+            match_context = snippet_clean[first_bold - 10: first_bold + 40] if first_bold >= 0 else None
 
             # Get title
             title = self.clean_string(i.find('a', class_="gse_alrt_title").text)
@@ -74,17 +73,27 @@ class MessageFactory(object):
 
         return all_messages
 
+    def get_indices(self, bold_tag_list, snippet):
+        if bold_tag_list is None or isinstance(bold_tag_list, str) or len(bold_tag_list) == 0:
+            result = (0, 0)
+        else:
+            index_positions = [snippet.find(tag) for tag in bold_tag_list]
+            result = (max(index_positions), min(index_positions))
+        return result
+
     @staticmethod
     def check_context(bold_tag_list):
-        if bold_tag_list:
+        if bold_tag_list is not None:
+            # Turn into set to get rid of duplicate tags
+            bold_tag_set = [i.lower() for i in bold_tag_list]
             nhm_name = {"natural", "history", "museum", "london"}
-            label_patterns = ["nhmuk", "nhml", "bmnh", "bm nh", "nh bm", "bmnh e", "e bmnh", "10.5519"]
-            tag = " ".join(bold_tag_list)
+            label_patterns = ["nhmuk", "nhml", "bmnh", "bm nh", "nh bm", "10.5519"]
+            tag = " ".join(bold_tag_set)
 
-            if bold_tag_list == nhm_name or tag in label_patterns:
-                return True
-            else:
-                return False
+            # return true if highlight matches label, false otherwise
+            return bold_tag_set == nhm_name or tag in label_patterns
+        else:
+            return False
 
     def parse_bib_data(self, bib_data):
         m_author = None
