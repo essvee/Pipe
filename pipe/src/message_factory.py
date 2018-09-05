@@ -26,32 +26,17 @@ class MessageFactory(object):
         return all_messages
 
     def parse_gmail(self, soup):
-        h3 = soup("h3")
-
+        raw_messages = soup("h3")
         all_messages = []
 
-        for i in h3:
+        for i in raw_messages:
             # Retrieve + parse bib_data
-            sibling = i.next_sibling
-            bib_data = self.clean_string(sibling.text)
-            parsed_bib_data = self.parse_bib_data(bib_data)
+            bib_data = i.next_sibling
+            parsed_bib_data = self.parse_bib_data(self.clean_string(bib_data.text))
 
-            # Get snippet + any bolded text
-            snippet = sibling.next_sibling
-            snippet_clean = self.clean_string(" ".join(snippet.stripped_strings))
-
-            # Get a list of all bold text
-            bold_tag_list = None if snippet.find_all('b') is None else [i.text for i in snippet.find_all('b')]
-
-            # Get distance apart between first and last highlighted term in snippet
-            second_bold, first_bold = self.get_indices(bold_tag_list, snippet_clean)
-            distance_apart = second_bold - first_bold
-
-            # Check that bold words match scholar alerts
-            snippet_match = self.check_context(bold_tag_list)
-
-            # Extract the string around the bold text
-            match_context = snippet_clean[first_bold - 10: first_bold + 40] if first_bold >= 0 else None
+            # Get snippet + features from highlights
+            snippet = bib_data.next_sibling
+            snippet_clean, highlight_length, snippet_match, match_context = self.parse_snippet(snippet)
 
             # Get title
             title = self.clean_string(i.find('a', class_="gse_alrt_title").text)
@@ -68,12 +53,33 @@ class MessageFactory(object):
                                         m_pub_year=parsed_bib_data['m_pub_year'],
                                         label=self.label_id,
                                         match_context=match_context,
-                                        snippet_match=snippet_match
+                                        snippet_match=snippet_match,
+                                        highlight_length=highlight_length
                                         ))
+            print(all_messages[-1])
 
         return all_messages
 
-    def get_indices(self, bold_tag_list, snippet):
+    def parse_snippet(self, snippet):
+        snippet_clean = self.clean_string(" ".join(snippet.stripped_strings))
+
+        # Get a list of all bold text
+        bold_tag_list = None if snippet.find_all('b') is None else [i.text for i in snippet.find_all('b')]
+
+        # Get distance apart between first and last highlighted term in snippet
+        second_bold, first_bold = self.get_indices(bold_tag_list, snippet_clean)
+        highlight_length = second_bold - first_bold
+
+        # Check that bold words match scholar alerts
+        snippet_match = self.check_context(bold_tag_list)
+
+        # Extract the string around the bold text
+        match_context = snippet_clean[first_bold - 10: first_bold + 40] if first_bold >= 0 else None
+
+        return snippet_clean, highlight_length, snippet_match, match_context
+
+    @staticmethod
+    def get_indices(bold_tag_list, snippet):
         if bold_tag_list is None or isinstance(bold_tag_list, str) or len(bold_tag_list) == 0:
             result = (0, 0)
         else:
