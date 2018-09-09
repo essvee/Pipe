@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from habanero import Crossref
 from fuzzywuzzy import fuzz
@@ -17,13 +18,16 @@ class IdentifyCrossRef:
         harvest_date = date.today().strftime('%Y-%m-%d')
 
         for message in self.messages:
-            print(f"Fetching crossref info for {message.title}: {message.message_id}")
-            crossref_result = cr.works(query_title=message.title,
-                                       query_author=message.m_author,
-                                       query_container_title=message.m_pub_title, rows=1,
-                                       select='DOI,title,author,type,subject,container-title,'
-                                              'subject,publisher,issue,volume,page,ISSN,ISBN,published-online,'
-                                              'issued,link')
+            print(f"CrossRef check for {message.title}...")
+            query = message.title if message.m_pub_title is None else f"{message.title} {message.m_pub_title}"
+            pub_date = '1990-01-01' if message.m_pub_year is None else f"{message.m_pub_year}-01-01"
+            crossref_result = cr.works(
+                                    query=query,
+                                    filter={'from_pub_date': pub_date},
+                                    limit=1,
+                                    select='DOI,title,author,type,subject,container-title,'
+                                    'subject,publisher,issue,volume,page,ISSN,ISBN,published-online,'
+                                    'issued,link')
 
             # Skip if no results returned
             if crossref_result['message']['total-results'] == 0:
@@ -32,7 +36,7 @@ class IdentifyCrossRef:
 
             # Compare original title to title of best match returned by CrossRef
             best_match = crossref_result['message']['items'][0]
-            cr_title = best_match['title'][0]
+            cr_title = 'Unknown' if 'title' not in best_match else best_match['title'][0]
             score = fuzz.partial_ratio(message.title, cr_title)
 
             # If similar, use to create Citation
@@ -40,6 +44,7 @@ class IdentifyCrossRef:
                 cr_doi = best_match.get('DOI')
 
                 if cr_doi is None:
+                    # print("No doi returned")
                     unidentified_citations.append((harvest_date, message.message_id))
                     continue
 

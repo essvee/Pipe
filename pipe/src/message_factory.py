@@ -36,7 +36,7 @@ class MessageFactory(object):
 
             # Get snippet + features from highlights
             snippet = bib_data.next_sibling
-            snippet_clean, highlight_length, snippet_match, match_context = self.parse_snippet(snippet)
+            snippet_clean, highlight_length, snippet_match = self.parse_snippet(snippet)
 
             # Get title
             title = self.clean_string(i.find('a', class_="gse_alrt_title").text)
@@ -52,7 +52,6 @@ class MessageFactory(object):
                                         m_pub_title=parsed_bib_data['m_pub_title'],
                                         m_pub_year=parsed_bib_data['m_pub_year'],
                                         label=self.label_id,
-                                        match_context=match_context,
                                         snippet_match=snippet_match,
                                         highlight_length=highlight_length
                                         ))
@@ -62,28 +61,33 @@ class MessageFactory(object):
 
     def parse_snippet(self, snippet):
         snippet_clean = self.clean_string(" ".join(snippet.stripped_strings))
+        bold_words = snippet.find_all('b')
 
-        # Get a list of all bold text
-        bold_tag_list = None if snippet.find_all('b') is None else [i.text for i in snippet.find_all('b')]
+        # Return if there's no snippet with highlight
+        if bold_words is None:
+            return snippet_clean, None, None
+
+        str_snippet = str(snippet)
+
+        # Get a list of all bold text. Turn into str including tags so we're not measuring duplicates
+        bold_words_text = [i.text for i in bold_words]
+        bold_words_html = [str(i) for i in bold_words]
 
         # Get distance apart between first and last highlighted term in snippet
-        second_bold, first_bold = self.get_indices(bold_tag_list, snippet_clean)
-        highlight_length = second_bold - first_bold
+        last_bold, first_bold = self.get_indices(bold_words_html, str_snippet)
+        highlight_length = last_bold - first_bold
 
         # Check that bold words match scholar alerts
-        snippet_match = self.check_context(bold_tag_list)
+        snippet_match = self.check_context(bold_words_text)
 
-        # Extract the string around the bold text
-        match_context = snippet_clean[first_bold - 10: first_bold + 40] if first_bold >= 0 else None
-
-        return snippet_clean, highlight_length, snippet_match, match_context
+        return snippet_clean, highlight_length, snippet_match
 
     @staticmethod
-    def get_indices(bold_tag_list, snippet):
-        if bold_tag_list is None or isinstance(bold_tag_list, str) or len(bold_tag_list) == 0:
+    def get_indices(bold_tag_list, str_snippet):
+        if isinstance(bold_tag_list, str) or len(bold_tag_list) == 0:
             result = (0, 0)
         else:
-            index_positions = [snippet.find(tag) for tag in bold_tag_list]
+            index_positions = [str_snippet.find(tag) for tag in bold_tag_list]
             result = (max(index_positions), min(index_positions))
         return result
 
@@ -91,7 +95,7 @@ class MessageFactory(object):
     def check_context(bold_tag_list):
         if bold_tag_list is not None:
             # Turn into set to get rid of duplicate tags
-            bold_tag_set = [i.lower() for i in bold_tag_list]
+            bold_tag_set = set([i.lower() for i in bold_tag_list])
             nhm_name = {"natural", "history", "museum", "london"}
             label_patterns = ["nhmuk", "nhml", "bmnh", "bm nh", "nh bm", "10.5519"]
             tag = " ".join(bold_tag_set)
