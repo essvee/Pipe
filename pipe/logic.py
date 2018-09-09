@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from datetime import datetime
+from datetime import datetime, date
 
 from pipe.src import harvest_gmail, util, message, citation
 from pipe.src.identify_crossref import IdentifyCrossRef
@@ -16,8 +16,8 @@ messages = harvest_gmail.HarvestGmail().main()
 if messages:
     # Write messages to database
     message_sql = """INSERT INTO message_store (email_id, title, snippet, m_author, m_pub_title, m_pub_year, sent_date,
-    harvested_date, source, id_status, label_id, doi, match_context, snippet_match, highlight_length) VALUES (%s, %s, %s, %s, %s, %s,
-    %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+    harvested_date, source, id_status, label_id, doi, snippet_match, highlight_length) VALUES (%s, %s, %s, %s, %s, %s,
+    %s, %s, %s, %s, %s, %s, %s, %s)"""
 
     u.write_new_objects(message_sql, messages)
 
@@ -25,6 +25,7 @@ if messages:
 # Get all unidentified messages from message_store
 unidentified_sql = "SELECT * FROM message_store WHERE id_status = False AND (last_crossref_run IS NULL " \
                    "OR last_crossref_run < ADDDATE(DATE(NOW()), INTERVAL -1 MONTH))"
+# unidentified_sql = "SELECT * FROM message_store WHERE id_status = FALSE and source = 'GS'"
 cursor = u.query_db(unidentified_sql)
 mystery_messages = cursor.fetchall()
 
@@ -41,7 +42,6 @@ checklist = [message.Message(message_id=i[0],
                              source=i[9],
                              identification_status=i[10],
                              label=i[11],
-                             match_context=i[13],
                              snippet_match=i[14],
                              highlight_length=i[15]
                              ) for i in mystery_messages]
@@ -49,11 +49,14 @@ checklist = [message.Message(message_id=i[0],
 cr_i = IdentifyCrossRef(checklist)
 identified_citations, unidentified_citations = cr_i.get_crossref_match()
 found_messages = []
+
+crossref_date = date.today().strftime('%Y-%m-%d')
+
 for x, y in identified_citations.items():
     for i in y.message_ids:
-        found_messages.append((x, i))
+        found_messages.append((x, crossref_date, i))
 
-update_msg_found = """UPDATE message_store SET doi = %s, id_status = True WHERE message_id = %s"""
+update_msg_found = """UPDATE message_store SET doi = %s, id_status = True, last_crossref_run = %s WHERE message_id = %s"""
 u.write_new_normals(update_msg_found, found_messages)
 
 update_msg_unidentified = """UPDATE message_store SET last_crossref_run = %s WHERE message_id = %s"""
