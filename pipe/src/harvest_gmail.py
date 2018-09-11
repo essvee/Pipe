@@ -21,6 +21,13 @@ class HarvestGmail:
         self.__APPLICATION_NAME = 'DCP Pipeline'
 
     def main(self):
+        """Runs class logic: controls flow of authentication,
+        message retrieval and inbox updates.
+
+        :return: List of Messages constructed by MessageFactory.
+        These messages have been retrieved from the Gmail inbox
+        and parsed to extract metadata.
+        """
         # Get authenticated Gmail Service Object
         service = self.get_credentials()
 
@@ -46,9 +53,18 @@ class HarvestGmail:
         return message_objects
 
     def email_metadata(self, service, email):
+        """Parses Service objects and extracts first level of metadata.
+        :param service: Gmail Service object
+        :param email: ID of unread email
+        :return: Tuple containing (email ID, label string, date email received, decoded email body).
+        """
+        # Retrieve full-text email using message_id
         full_email = self.get_email_full(service, email['id'])
         email_id = full_email['id']
+
+        # Extract custom labels, received date and email body
         label = self.get_label(full_email)
+        # Convert from internal date format
         date_received = date.fromtimestamp(int(full_email['internalDate']) / 1000).isoformat()
         email_body = base64.urlsafe_b64decode(full_email['payload']['body'].get('data') or None)
 
@@ -94,6 +110,7 @@ class HarvestGmail:
             response = service.users().messages()\
                 .list(userId='me', q='is:unread from:scholaralerts-noreply@google.com', ).execute()
             p_emails = []
+            print(response)
             if 'messages' in response:
                 p_emails.extend(response['messages'])
                 while 'nextPageToken' in response:
@@ -122,6 +139,11 @@ class HarvestGmail:
 
     @staticmethod
     def get_label(g_email):
+        """ Loops over labels and extracts custom formats,
+        identified as starting with 'Label...'
+        :param g_email: Email payload
+        :return: Label id string
+        """
         label = None
 
         # Go through labels looking for custom ones
@@ -135,6 +157,13 @@ class HarvestGmail:
 
     @staticmethod
     def mark_read(service, unread_email_ids):
+        """ Updates processed messages as read.
+
+        :param service: GMail Service object
+        :param unread_email_ids: List of email IDs processed during the
+        current run.
+        :return: None
+        """
         # Updates messages to remove 'unread' label
         read_email_ids = [e['id'] for e in unread_email_ids]
         service.users().messages()\
