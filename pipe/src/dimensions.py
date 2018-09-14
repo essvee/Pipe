@@ -2,13 +2,12 @@ from datetime import date
 from requests import HTTPError
 import requests
 import time
-from pipe.src.util import Util as u
+
 
 class Dimensions:
     def __init__(self, citation_dois):
         self.citation_dois = citation_dois
         self.date_retrieved = date.today().strftime('%Y-%m-%d')
-
 
     def get_citations(self):
         insert_sql = "INSERT INTO bibliometrics(times_cited, recent_citations, retrieved_date, relative_citation_ratio," \
