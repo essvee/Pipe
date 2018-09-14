@@ -34,10 +34,6 @@ class Dimensions:
                                 doi))
             # Skip over DOIs which aren't found
             except HTTPError:
-                print(f"No results for {doi}")
-                continue
-            except ConnectionError:
-                print(f"Connection error for {doi}")
                 continue
 
         # Return
