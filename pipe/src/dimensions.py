@@ -10,8 +10,9 @@ class Dimensions:
         self.date_retrieved = date.today().strftime('%Y-%m-%d')
 
     def get_citations(self):
-        insert_sql = "INSERT INTO bibliometrics(times_cited, recent_citations, retrieved_date, relative_citation_ratio," \
-                     " field_citation_ratio, doi) VALUES(%s, %s, %s, %s, %s, %s)"
+        insert_sql = "INSERT INTO bibliometrics(times_cited, recent_citations, retrieved_date, " \
+                     "relative_citation_ratio, field_citation_ratio, doi) " \
+                     "VALUES(%s, %s, %s, %s, %s, %s)"
 
         results = []
 
