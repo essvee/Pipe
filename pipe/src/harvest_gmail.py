@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import re
 from datetime import date
-
 import httplib2
 import os
 from apiclient import discovery, errors
@@ -102,15 +101,15 @@ class HarvestGmail:
 
     @staticmethod
     def list_unread_emails(service):
-        """Lists all unread emails in the user's mailbox ,
-        :param service: Authorised Gmail API Service object
-        :return: List of email IDs
+        """Retrieves IDs for all unread emails from Google Scholar
+        in the inbox.
+        :param service: Authorised Gmail Service object
+        :return: List of unread email IDs
         """
         try:
             response = service.users().messages()\
                 .list(userId='me', q='is:unread from:scholaralerts-noreply@google.com', ).execute()
             p_emails = []
-            print(response)
             if 'messages' in response:
                 p_emails.extend(response['messages'])
                 while 'nextPageToken' in response:
