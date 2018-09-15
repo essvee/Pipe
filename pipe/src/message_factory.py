@@ -114,7 +114,7 @@ class MessageFactory(object):
         parsed_bib = bib_data.split(" - ")
         m_author = self.clean_string(parsed_bib[0])
 
-        # Split further to get year and author - TODO improve this. regex?
+        # Split further to get year and author
         if len(parsed_bib) > 1:
             parsed_b2 = parsed_bib[1].split(',')
 
