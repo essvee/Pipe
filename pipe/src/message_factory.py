@@ -15,6 +15,10 @@ class MessageFactory(object):
         self.label_id = label_id
 
     def main(self):
+        """
+        Controls program logic.
+        :return: List of Message objects
+        """
         # Turn body of email into html object
         soup = BeautifulSoup(self.email_body, 'html.parser')
 
@@ -26,6 +30,11 @@ class MessageFactory(object):
         return all_messages
 
     def parse_gmail(self, soup):
+        """
+        Parses email html and extracts bibliographic data
+        :param soup: Beautiful soup object representing email html
+        :return: List of Messaege objects
+        """
         raw_messages = soup("h3")
         all_messages = []
 
@@ -60,6 +69,12 @@ class MessageFactory(object):
         return all_messages
 
     def parse_snippet(self, snippet):
+        """
+        Parses bibliographic data from string
+        :param snippet: Snippet preview extracted from email
+        :return: tuple containing clean snippet, measure of highlight_distance and boolean
+        showing whether the exact query term was found in the snippet.
+        """
         snippet_clean = self.clean_string(" ".join(snippet.stripped_strings))
         bold_words = snippet.find_all('b')
 
@@ -84,6 +99,12 @@ class MessageFactory(object):
 
     @staticmethod
     def get_indices(bold_tag_list, str_snippet):
+        """
+        Returns the position of the first and last highlights found in the snippet.
+        :param bold_tag_list: list of highlighted terms found in the snippet
+        :param str_snippet: string version of email preview snippet
+        :return: Index of first bold text and index of last bold text found in snippet
+        """
         if isinstance(bold_tag_list, str) or len(bold_tag_list) == 0:
             result = (0, 0)
         else:
@@ -93,6 +114,11 @@ class MessageFactory(object):
 
     @staticmethod
     def check_context(bold_tag_list):
+        """
+        Checks if the full query term is found in the snippet
+        :param bold_tag_list: query terms extracted from the snippet
+        :return: True if found, false otherwise
+        """
         if bold_tag_list is not None:
             # Turn into set to get rid of duplicate tags
             bold_tag_set = set([i.lower() for i in bold_tag_list])
@@ -106,6 +132,11 @@ class MessageFactory(object):
             return False
 
     def parse_bib_data(self, bib_data):
+        """
+        Parses the string containg author name, publication title and pub year.
+        :param bib_data: String
+        :return: Dict containing author name, publication title and year
+        """
         m_author = None
         m_pub_title = None
         m_pub_year = None
@@ -133,4 +164,9 @@ class MessageFactory(object):
 
     @staticmethod
     def clean_string(string):
+        """
+        Cleans string
+        :param string: String to be cleaned
+        :return: Clean string
+        """
         return unicodedata.normalize("NFKD", string).replace("...", "").strip()
