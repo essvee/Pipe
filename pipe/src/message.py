@@ -22,6 +22,10 @@ class Message:
     highlight_length: int = None
 
     def get_values(self):
+        """
+        Returns the object fields
+        :return: Tuple
+        """
         return (self.email_id, self.title, self.snippet, self.m_author, self.m_pub_title, self.m_pub_year,
                 self.sent_date, self.harvested_date, self.source, self.identification_status, self.label,
                 self.doi, self.snippet_match, self.highlight_length)
