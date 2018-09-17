@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from datetime import datetime, date
-
-from pipe.src import harvest_gmail, util, message, citation
+from pipe.src import harvest_gmail, message
+from pipe.src.classifier import Classifier
+from pipe.src.dimensions import Dimensions
 from pipe.src.identify_crossref import IdentifyCrossRef
+from pipe.src.unpaywall import Unpaywall
 from pipe.src.util import Util
 
-a = datetime.now()
 u = Util()
 
 # Get Message objects from Gmail
@@ -25,7 +25,6 @@ if messages:
 # Get all unidentified messages from message_store
 unidentified_sql = "SELECT * FROM message_store WHERE id_status = False AND (last_crossref_run IS NULL " \
                    "OR last_crossref_run < ADDDATE(DATE(NOW()), INTERVAL -1 MONTH))"
-# unidentified_sql = "SELECT * FROM message_store WHERE id_status = FALSE and source = 'GS'"
 cursor = u.query_db(unidentified_sql)
 mystery_messages = cursor.fetchall()
 
@@ -46,19 +45,22 @@ checklist = [message.Message(message_id=i[0],
                              highlight_length=i[15]
                              ) for i in mystery_messages]
 
+# Query Crossref with new message ids
 cr_i = IdentifyCrossRef(checklist)
 identified_citations, unidentified_citations = cr_i.get_crossref_match()
 found_messages = []
-
 crossref_date = date.today().strftime('%Y-%m-%d')
 
+# For every identified citation, extract source message_id(s)
 for x, y in identified_citations.items():
     for i in y.message_ids:
         found_messages.append((x, crossref_date, i))
 
+# Update database with found citations
 update_msg_found = """UPDATE message_store SET doi = %s, id_status = True, last_crossref_run = %s WHERE message_id = %s"""
 u.write_new_normals(update_msg_found, found_messages)
 
+# Update database record for unidentified messages
 update_msg_unidentified = """UPDATE message_store SET last_crossref_run = %s WHERE message_id = %s"""
 u.write_new_normals(update_msg_unidentified, unidentified_citations)
 
@@ -66,7 +68,6 @@ u.write_new_normals(update_msg_unidentified, unidentified_citations)
 citation_sql = """INSERT INTO citation_store (author, doi, title, type, issued_date, subject, pub_title, pub_publisher,
 issn, isbn, issue, volume, page, classification_id, nhm_sub) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,
  %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE nhm_sub = 1"""
-
 verified_citations = []
 u.write_new_objects(citation_sql, identified_citations.values())
 
@@ -74,8 +75,37 @@ u.write_new_objects(citation_sql, identified_citations.values())
 nhm_pub_sql = 'UPDATE citation_store SET nhm_sub = 1 WHERE issn IN (SELECT issn from nhm_pubs)'
 u.query_db(unidentified_sql)
 
-b = datetime.now()
-c = b - a
-print(f"Runtime: {c}")
+# Only harvest metrics monthly
+if date.today().day == 1:
+    all_doi_sql = "SELECT doi FROM citation_store WHERE classification_id = True"
+    cursor = u.query_db(all_doi_sql)
+    citation_dois = cursor.fetchall()
+
+    dim = Dimensions(citation_dois)
+    dim_sql, b_data = dim.get_citations()
+    u.write_new_normals(dim_sql, b_data)
+
+# Get access data for unchecked dois
+unchecked_sql = "SELECT c.doi FROM citation_store c WHERE c.doi NOT IN (SELECT oa.doi FROM open_access oa) AND " \
+                "c.classification_id = True"
+cursor = u.query_db(unchecked_sql)
+unpay = Unpaywall(cursor.fetchall())
+unpay_sql, unpay_data = unpay.get_access_data()
+
+# Write access data to database
+u.write_new_normals(unpay_sql, unpay_data)
+
+# Get a list of all unclassified citations
+unclassified_sql = "SELECT * FROM vw_data WHERE classification_id IS NULL"
+cursor = u.query_db(unchecked_sql)
+unchecked_dois = cursor.fetchall()
+
+# Pass unclassified DOIs to classifier
+classifier = Classifier(unchecked_dois)
+
+# Get results of classification and update database
+classification_sql, results = classifier.classify()
+u.write_new_normals(classification_sql, results)
+
 
 
