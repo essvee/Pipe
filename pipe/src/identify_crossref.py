@@ -11,6 +11,11 @@ class IdentifyCrossRef:
         self.mail_to = "s.vincent@nhm.ac.uk"
 
     def get_crossref_match(self):
+        """
+         Uses list of DOIs used to instantiate the class to query Unpaywall
+         and return metrics.
+         :return: string sql_query + a list of tuples holding data retrieved from Unpaywall
+         """
         cr = Crossref()
         cr.mailto = self.mail_to
         identified_citations = {}
@@ -75,8 +80,14 @@ class IdentifyCrossRef:
 
         return identified_citations, unidentified_citations
 
+
     @staticmethod
     def partial_date(part_date):
+        """
+        Parses partial dates and fills in missing values
+        :param part_date:
+        :return: Date
+        """
         if part_date[0][0] is None:
             return None
         elif len(part_date[0]) == 3:
@@ -90,5 +101,10 @@ class IdentifyCrossRef:
 
     @staticmethod
     def concatenate_authors(authors):
+        """
+        Concatenates author list
+        :param authors:
+        :return: String of authors, semicolon delimited
+        """
         return "; ".join([", ".join((n.get('family', ''), n.get('given', ''))) for n in authors]) \
             if authors is not None else None
