@@ -23,6 +23,10 @@ class Citation:
     nhm_sub: int = 0
 
     def get_values(self):
+        """
+        Returns the object fields
+        :return: Tuple
+        """
         return (self.cr_author, self.cr_doi, self.cr_title, self.cr_type, self.cr_issued_date, self.cr_subject,
                 self.cr_pub_title, self.cr_pub_publisher, self.pub_issn, self.pub_isbn, self.cr_issue, self.cr_volume,
                 self.cr_page, self.classification_id, self.nhm_sub)
