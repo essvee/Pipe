@@ -5,29 +5,6 @@ import pymysql
 
 class Util:
 
-    # Writes result set to csv. Takes a list of dictionaries: one per message
-    @staticmethod
-    def write_object_to_csv(list_dict_data, filename):
-        with open(filename, 'w', newline='\n') as csvfile:
-
-            headers = list(list_dict_data[0].get_values().keys())
-            writer = csv.DictWriter(csvfile, fieldnames=headers)
-            writer.writeheader()
-
-            try:
-                for i in list_dict_data:
-                    writer.writerow(i.get_values())
-            except AttributeError as error:
-                print(error.__repr__())
-
-    # Method to load manually-gathered candidates from csv
-    def read_message_from_csv(self, filename):
-        with open(filename, 'r') as csvfile:
-            reader = csv.DictReader(csvfile, dialect='excel')
-            results = [row for row in reader]
-            print(results)
-            return results
-
     def query_db(self, sql):
         """
         Read and write from mySQL database
