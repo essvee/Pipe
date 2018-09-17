@@ -9,6 +9,11 @@ class Unpaywall:
         self.date_retrieved = date.today().strftime('%Y-%m-%d')
 
     def get_access_data(self):
+        """
+        Uses list of DOIs used to instantiate the class to query Unpaywall
+        and return metrics.
+        :return: string sql_query + a list of tuples holding data retrieved from Unpaywall
+        """
         insert_sql = "INSERT INTO open_access(best_oa_url, updated_date, retrieved_date, " \
                      "pdf_url, is_oa, doi, doi_url, host_type, version) " \
                      "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"

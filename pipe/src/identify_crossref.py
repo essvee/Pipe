@@ -12,9 +12,9 @@ class IdentifyCrossRef:
 
     def get_crossref_match(self):
         """
-         Uses list of DOIs used to instantiate the class to query Unpaywall
-         and return metrics.
-         :return: string sql_query + a list of tuples holding data retrieved from Unpaywall
+         Uses list of DOIs used to instantiate the class to query CrossRef
+         and return article metadad.
+         :return: List of identified Citation objects and list of unidentified message ids
          """
         cr = Crossref()
         cr.mailto = self.mail_to

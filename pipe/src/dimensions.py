@@ -11,7 +11,7 @@ class Dimensions:
 
     def get_citations(self):
         """
-        Uses list of DOIs used to tinstantiate the class to query Dimensions
+        Uses list of DOIs used to instantiate the class to query Dimensions
         and return metrics.
         :return: string sql_query + a list of tuples holding data retrieved from Dimensions
         """

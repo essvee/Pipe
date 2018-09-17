@@ -15,9 +15,9 @@ from pipe.src.message_factory import MessageFactory
 class HarvestGmail:
     def __init__(self):
         # If modified, delete previously saved credentials at ~/.credentials/gmail-credentials.json
-        self.__SCOPES = 'https://www.googleapis.com/auth/gmail.modify'
-        self.__CLIENT_SECRET_FILE = '/Users/essvee/Documents/Project/Pipe/pipe/src/client_secret.json'
-        self.__APPLICATION_NAME = 'DCP Pipeline'
+        self.scopes = 'https://www.googleapis.com/auth/gmail.modify'
+        self.client_secret_file = '/Users/essvee/Documents/Project/Pipe/pipe/src/client_secret.json'
+        self.application_name = 'DCP Pipeline'
 
     def main(self):
         """Runs class logic: controls flow of authentication,
@@ -90,8 +90,8 @@ class HarvestGmail:
         flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 
         if not credentials or credentials.invalid:
-            flow = client.flow_from_clientsecrets(self.__CLIENT_SECRET_FILE, self.__SCOPES)
-            flow.user_agent = self.__APPLICATION_NAME
+            flow = client.flow_from_clientsecrets(self.client_secret_file, self.scopes)
+            flow.user_agent = self.application_name
             credentials = tools.run_flow(flow, store, flags)
             print('Storing credentials to ' + credential_path)
 
