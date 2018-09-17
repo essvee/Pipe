@@ -10,12 +10,16 @@ class Dimensions:
         self.date_retrieved = date.today().strftime('%Y-%m-%d')
 
     def get_citations(self):
+        """
+        Uses list of DOIs used to tinstantiate the class to query Dimensions
+        and return metrics.
+        :return: string sql_query + a list of tuples holding data retrieved from Dimensions
+        """
         insert_sql = "INSERT INTO bibliometrics(times_cited, recent_citations, retrieved_date, " \
                      "relative_citation_ratio, field_citation_ratio, doi) " \
                      "VALUES(%s, %s, %s, %s, %s, %s)"
 
         results = []
-
         # For each DOI in list, retrieve citation metrics
         for doi in self.citation_dois:
             # Throttle query rate to comply with API terms of use
