@@ -23,11 +23,9 @@ class Unpaywall:
         # For each DOI in list, retrieve citation metrics
         for doi in self.citation_dois:
             url = f"https://api.unpaywall.org/v2/{doi[0]}?email=s.vincent@nhm.ac.uk"
-
             try:
                 r = requests.get(url)
                 r.raise_for_status()
-
                 if r.json()['is_oa'] is True:
                     best_oa_location = r.json()['best_oa_location']
                     results.append((best_oa_location['url'] or None,
