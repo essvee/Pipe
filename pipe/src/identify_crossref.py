@@ -1,4 +1,3 @@
-import json
 from datetime import date
 from habanero import Crossref
 from fuzzywuzzy import fuzz
