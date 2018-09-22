@@ -1,7 +1,4 @@
 import dill as pickle
-import os
-import sklearn
-import scipy
 import pandas as pd
 from sqlalchemy import create_engine
 
@@ -19,14 +16,23 @@ class Classifier:
 
     def load_data(self):
         engine = create_engine('mysql+pymysql://root:r3ptar@localhost/pipe_db')
-        df = pd.read_sql_table('vw_data', engine)
+        df = pd.read_sql_table('vw_classifier', engine)
         return df
 
     def shape_data(self, df):
-        df2 = df[['doi', 'nhm_sub', 'snippet_match', 'highlight_length',
-                  'label_id']]
-        df3 = df2.drop_duplicates().copy()
+        df3 = df.drop_duplicates().copy()
+
+        labels = ['Label_1', 'Label_2', 'Label_3', 'Label_4', 'Label_5', 'Label_8']
+
+        for l in labels:
+            if l in df3.iloc[:, -1:].values:
+                labels.remove(l)
+
         df4 = pd.get_dummies(df3, columns=['label_id'], prefix='L')
+
+        for label in labels:
+            df4[f"L_{label}"] = 0
+
         aggregations = {'nhm_sub': 'max',
                         'snippet_match': 'mean',
                         'highlight_length': 'mean',
@@ -37,13 +43,17 @@ class Classifier:
                         'L_Label_5': 'max',
                         'L_Label_8': 'max'}
 
-        return df4.groupby(['doi']).agg(aggregations).reset_index()
+        grouped_data = df4.groupby(['doi']).agg(aggregations).reset_index()
+
+        return grouped_data
+
 
     def classify(self):
         classification_sql = "UPDATE citation_store SET classification_id = %s WHERE doi = %s"
-        preds = self.model.predict(self.data)
+        preds = self.model.predict(self.grouped_data.iloc[:, 1:].values)
+
         self.grouped_data['classification_id'] = pd.Series(preds, index=self.grouped_data.index)
-        results = list(zip(self.grouped_data.classification_id, self.grouped_data.doi))
+        results = list(zip(self.grouped_data.classification_id.astype(str), self.grouped_data.doi))
 
         return classification_sql, results
 
