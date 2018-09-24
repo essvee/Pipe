@@ -2,6 +2,7 @@ import dill as pickle
 import pandas as pd
 from sqlalchemy import create_engine
 
+
 class Classifier:
     def __init__(self, records):
         self.dois = [i[0] for i in records]
