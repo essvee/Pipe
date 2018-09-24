@@ -78,21 +78,21 @@ class Util:
                             'version', 'retrieved_date']
 
         cursor = self.query_db(sql_citation_level)
-        self.write_object_to_csv(cursor.fetchall(), citation_header, 'citation_export.csv')
+        self.write_object_to_csv(cursor.fetchall(), citation_header, 'csv_out/citation_export.csv')
 
         # Export message-level data
         sql_message_level = "SELECT * FROM vw_message_level"
         message_header = ['doi', 'label_name', 'date_sent']
 
         cursor = self.query_db(sql_message_level)
-        self.write_object_to_csv(cursor.fetchall(), message_header, 'message_export.csv')
+        self.write_object_to_csv(cursor.fetchall(), message_header, 'csv_out/message_export.csv')
 
         # Export impact data
         sql_impact = "SELECT * FROM vw_impact"
         impact_header = ['doi', 'times_cited', 'retrieved_date']
 
         cursor = self.query_db(sql_impact)
-        self.write_object_to_csv(cursor.fetchall(), impact_header, 'impact_export.csv')
+        self.write_object_to_csv(cursor.fetchall(), impact_header, 'csv_out/impact_export.csv')
 
 
     # Writes result set to csv. Takes a list of dictionaries: one per message
