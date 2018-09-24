@@ -103,9 +103,12 @@ unchecked_dois = cursor.fetchall()
 # Pass unclassified DOIs to classifier
 classifier = Classifier(unchecked_dois)
 
-# Get results of classification and update database
-classification_sql, results = classifier.classify()
-u.write_new_normals(classification_sql, results)
+if len(classifier.grouped_data) > 0:
+    # Get results of classification and update database
+    classification_sql, results = classifier.classify()
+    u.write_new_normals(classification_sql, results)
 
+# Update csvs (temp workaround)
+u.update_repo()
 
 
