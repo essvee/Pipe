@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 from bs4 import BeautifulSoup
 import unicodedata
 from pipe.src.message import Message
@@ -49,6 +50,7 @@ class MessageFactory(object):
 
             # Get title
             title = self.clean_string(i.find('a', class_="gse_alrt_title").text)
+            print(f"Email {self.email_id}. Parsing '{title}'...")
 
             # Build message object + add to list
             all_messages.append(Message(email_id=self.email_id,
@@ -64,7 +66,6 @@ class MessageFactory(object):
                                         snippet_match=snippet_match,
                                         highlight_length=highlight_length
                                         ))
-            print(all_messages[-1])
 
         return all_messages
 

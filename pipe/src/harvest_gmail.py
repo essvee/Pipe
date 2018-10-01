@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import re
 from datetime import date
 import httplib2
@@ -38,6 +39,7 @@ class HarvestGmail:
         date_harvested = date.today()
 
         if unread_emails:
+            print(f"Starting harvest. {len(unread_emails)} new emails found...")
             # Parse each email and send to MessageFactory for construction of message list
             for n in unread_emails:
                 email_id, label, date_sent, email_body = self.email_metadata(service, n)
@@ -47,7 +49,7 @@ class HarvestGmail:
                 message_objects.extend(messages)
 
             # Mark emails as read
-            self.mark_read(service, unread_emails)
+            # self.mark_read(service, unread_emails)
 
         return message_objects
 

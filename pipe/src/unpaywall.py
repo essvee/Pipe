@@ -19,6 +19,7 @@ class Unpaywall:
                      "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
 
         results = []
+        print("Checking access...")
 
         # For each DOI in list, retrieve citation metrics
         for doi in self.citation_dois:
@@ -54,5 +55,7 @@ class Unpaywall:
             except HTTPError:
                 continue
 
-        # Return
+        print(f"Access data found for {len(results)} DOIs.")
+        print("")
+
         return insert_sql, results

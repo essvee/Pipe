@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 from datetime import datetime, date
 from pipe.src import harvest_gmail, message
 from pipe.src.classifier import Classifier

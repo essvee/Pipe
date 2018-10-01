@@ -21,6 +21,9 @@ class IdentifyCrossRef:
         unidentified_citations = []
         harvest_date = date.today().strftime('%Y-%m-%d')
 
+        print("")
+        print('Starting identification:')
+
         for message in self.messages:
             print(f"CrossRef check for {message.title}...")
             query = message.title if message.m_pub_title is None else f"{message.title} {message.m_pub_title}"
@@ -77,6 +80,8 @@ class IdentifyCrossRef:
             else:
                 unidentified_citations.append((harvest_date, message.message_id))
 
+        print(f"{len(identified_citations)} matches found, {unidentified_citations} not found.")
+        print("")
         return identified_citations, unidentified_citations
 
 

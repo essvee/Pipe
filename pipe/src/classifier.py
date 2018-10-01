@@ -53,6 +53,8 @@ class Classifier:
         classification_sql = "UPDATE citation_store SET classification_id = %s WHERE doi = %s"
         preds = self.model.predict(self.grouped_data.iloc[:, 1:].values)
 
+        print(f"Starting classification. {len(preds)} to classify...")
+
         self.grouped_data['classification_id'] = pd.Series(preds, index=self.grouped_data.index)
         results = list(zip(self.grouped_data.classification_id.astype(str), self.grouped_data.doi))
 

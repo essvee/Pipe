@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import csv
 import pymysql
 
@@ -12,7 +13,7 @@ class Util:
         :return: Cursor
         """
         host, user, password, database = self.get_keys('server-permissions.txt')
-        with pymysql.connect(host=host, user=user, password=password, db=database) as cursor:
+        with pymysql.connect(host=host, user=user, password=password, db=database, charset='utf8') as cursor:
             try:
                 cursor.execute(sql)
                 return cursor
@@ -46,7 +47,7 @@ class Util:
 
         host, user, password, database = self.get_keys('server-permissions.txt')
 
-        with pymysql.connect(host=host, user=user, password=password, db=database) as cursor:
+        with pymysql.connect(host=host, user=user, password=password, db=database, charset='utf8') as cursor:
             try:
                 cursor.executemany(sql, row_data)
                 return cursor
@@ -62,7 +63,7 @@ class Util:
         """
         host, user, password, database = self.get_keys('server-permissions.txt')
 
-        with pymysql.connect(host=host, user=user, password=password, db=database) as cursor:
+        with pymysql.connect(host=host, user=user, password=password, db=database, charset='utf8') as cursor:
             try:
                 cursor.executemany(sql, row_data)
                 return cursor
