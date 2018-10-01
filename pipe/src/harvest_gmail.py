@@ -49,7 +49,7 @@ class HarvestGmail:
                 message_objects.extend(messages)
 
             # Mark emails as read
-            # self.mark_read(service, unread_emails)
+            self.mark_read(service, unread_emails)
 
         return message_objects
 
