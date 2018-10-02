@@ -68,7 +68,7 @@ u.write_new_normals(update_msg_unidentified, unidentified_citations)
 # Write messages to citation database
 citation_sql = """INSERT INTO citation_store (author, doi, title, type, issued_date, subject, pub_title, pub_publisher,
 issn, isbn, issue, volume, page, classification_id, nhm_sub) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,
- %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE nhm_sub = 1"""
+ %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE classification_id = NULL"""
 verified_citations = []
 u.write_new_objects(citation_sql, identified_citations.values())
 
@@ -93,16 +93,16 @@ cursor = u.query_db(unchecked_sql)
 unpay = Unpaywall(cursor.fetchall())
 unpay_sql, unpay_data = unpay.get_access_data()
 
-# # Write access data to database
+# Write access data to database
 u.write_new_normals(unpay_sql, unpay_data)
 
 # Get a list of all unclassified citations
 unclassified_sql = "SELECT * FROM vw_data WHERE classification_id IS NULL"
 cursor = u.query_db(unclassified_sql)
-unchecked_dois = cursor.fetchall()
+unclassified_dois = cursor.fetchall()
 
 # Pass unclassified DOIs to classifier
-classifier = Classifier(unchecked_dois)
+classifier = Classifier(unclassified_dois)
 
 if len(classifier.grouped_data) > 0:
     # Get results of classification and update database
