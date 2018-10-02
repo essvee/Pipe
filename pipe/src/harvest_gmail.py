@@ -51,6 +51,7 @@ class HarvestGmail:
             # Mark emails as read
             self.mark_read(service, unread_emails)
 
+        print(f"{len(message_objects)} new emails found.")
         return message_objects
 
     def email_metadata(self, service, email):

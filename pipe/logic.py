@@ -93,12 +93,12 @@ cursor = u.query_db(unchecked_sql)
 unpay = Unpaywall(cursor.fetchall())
 unpay_sql, unpay_data = unpay.get_access_data()
 
-# Write access data to database
+# # Write access data to database
 u.write_new_normals(unpay_sql, unpay_data)
 
 # Get a list of all unclassified citations
 unclassified_sql = "SELECT * FROM vw_data WHERE classification_id IS NULL"
-cursor = u.query_db(unchecked_sql)
+cursor = u.query_db(unclassified_sql)
 unchecked_dois = cursor.fetchall()
 
 # Pass unclassified DOIs to classifier

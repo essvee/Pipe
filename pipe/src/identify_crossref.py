@@ -80,7 +80,7 @@ class IdentifyCrossRef:
             else:
                 unidentified_citations.append((harvest_date, message.message_id))
 
-        print(f"{len(identified_citations)} matches found, {unidentified_citations} not found.")
+        print(f"{len(identified_citations)} matches found, {len(unidentified_citations)} not found.")
         print("")
         return identified_citations, unidentified_citations
 
