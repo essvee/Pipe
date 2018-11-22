@@ -48,8 +48,9 @@ class HarvestGmail:
 
                 message_objects.extend(messages)
 
+            # TODO - uncomment this!
             # Mark emails as read
-            self.mark_read(service, unread_emails)
+            # self.mark_read(service, unread_emails)
 
         print(f"{len(message_objects)} new emails found.")
         return message_objects
