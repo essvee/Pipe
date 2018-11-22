@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 from datetime import datetime, date
-from pipe.src import harvest_gmail, message
+from pipe.src import harvest_gmail
 from pipe.src.classifier import Classifier
+from pipe.src.db_objects import Citation, Message
 from pipe.src.dimensions import Dimensions
 from pipe.src.identify_crossref import IdentifyCrossRef
 from pipe.src.unpaywall import Unpaywall
@@ -30,21 +31,21 @@ cursor = u.query_db(unidentified_sql)
 mystery_messages = cursor.fetchall()
 
 # Turn each result back into Message obj
-checklist = [message.Message(message_id=i[0],
-                             email_id=i[1],
-                             title=i[2],
-                             snippet=i[3],
-                             m_author=i[4],
-                             m_pub_title=i[5],
-                             m_pub_year=i[6],
-                             sent_date=i[7],
-                             harvested_date=i[8],
-                             source=i[9],
-                             identification_status=i[10],
-                             label=i[11],
-                             snippet_match=i[14],
-                             highlight_length=i[15]
-                             ) for i in mystery_messages]
+checklist = [Message(message_id=i[0],
+                     email_id=i[1],
+                     title=i[2],
+                     snippet=i[3],
+                     m_author=i[4],
+                     m_pub_title=i[5],
+                     m_pub_year=i[6],
+                     sent_date=i[7],
+                     harvested_date=i[8],
+                     source=i[9],
+                     identification_status=i[10],
+                     label=i[11],
+                     snippet_match=i[14],
+                     highlight_length=i[15]
+                     ) for i in mystery_messages]
 
 # Query Crossref with new message ids
 cr_i = IdentifyCrossRef(checklist)
