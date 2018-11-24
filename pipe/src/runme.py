@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 from datetime import date, timedelta
-
 from sqlalchemy import or_
-
 from pipe.src.base import Session
 from pipe.src.db_objects import Message
 from pipe.src.harvest_gmail import HarvestGmail
+from pipe.src.identify_crossref import IdentifyCrossRef
 
 # Connect to Gmail account
 messages = HarvestGmail().main()
@@ -20,7 +19,17 @@ session.add_all(messages)
 cutoff = date.today() - timedelta(days=31)
 
 # Query message_store for records which haven't been checked against crossref in the last month (or ever)
-mystery_messages = session.query(Message)\
-    .filter(Message.id_status == False)\
-    .filter(or_(Message.last_crossref_run is None, Message.last_crossref_run < cutoff))
+mystery_messages = list(session.query(Message)
+                        .filter(or_(Message.last_crossref_run == None, Message.last_crossref_run < cutoff))
+                        .filter(Message.id_status == False))
+
+identified_citations, id_messages = IdentifyCrossRef(mystery_messages).get_crossref_match()
+
+# Update message table for both matched and unmatched messages
+session.add_all(id_messages)
+
+# Add new citations
+session.add_all(identified_citations)
+session.flush()
+
 

@@ -51,8 +51,8 @@ class Message(Base):
     source = Column(String)
     id_status = Column(Integer)
     label_id = Column(String)
-    doi = Column(String)
-    last_crossref_run = Column(Date)
+    doi = Column(String, nullable=True)
+    last_crossref_run = Column(Date, nullable=True)
     snippet_match = Column(Integer)
     highlight_length = Column(Integer)
 

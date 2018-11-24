@@ -64,7 +64,8 @@ class MessageFactory(object):
                                         source=self.source,
                                         id_status=False,
                                         label_id=self.label_id,
-                                        doi="",
+                                        doi=None,
+                                        last_crossref_run=None,
                                         snippet_match=snippet_match,
                                         highlight_length=highlight_length
                                         ))

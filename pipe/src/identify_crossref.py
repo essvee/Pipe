@@ -1,7 +1,7 @@
 from datetime import date
 from habanero import Crossref
 from fuzzywuzzy import fuzz
-from pipe.src.citation import Citation
+from pipe.src.db_objects import Citation
 
 
 class IdentifyCrossRef:
@@ -12,13 +12,13 @@ class IdentifyCrossRef:
     def get_crossref_match(self):
         """
          Uses list of DOIs used to instantiate the class to query CrossRef
-         and return article metadad.
+         and return article metadata.
          :return: List of identified Citation objects and list of unidentified message ids
          """
         cr = Crossref()
         cr.mailto = self.mail_to
-        identified_citations = {}
-        unidentified_citations = []
+        identified_citations = set()
+        citation_results = []
         harvest_date = date.today().strftime('%Y-%m-%d')
 
         print("")
@@ -36,9 +36,9 @@ class IdentifyCrossRef:
                                     'subject,publisher,issue,volume,page,ISSN,ISBN,published-online,'
                                     'issued,link')
 
-            # Skip if no results returned
+            # Update crossref date and skip if no results returned
             if crossref_result['message']['total-results'] == 0:
-                unidentified_citations.append((harvest_date, message.message_id))
+                message.last_crossref_run = harvest_date
                 continue
 
             # Compare original title to title of best match returned by CrossRef
@@ -51,38 +51,49 @@ class IdentifyCrossRef:
                 cr_doi = best_match.get('DOI')
 
                 if cr_doi is None:
-                    # print("No doi returned")
-                    unidentified_citations.append((harvest_date, message.message_id))
+                    # Update crossref date and skip if no doi in record
+                    message.last_crossref_run = harvest_date
                     continue
 
                 # If already seen, store the message id to update message in message_store with doi FK
                 elif cr_doi in identified_citations:
-                    identified_citations[cr_doi].message_ids.append(message.message_id)
+                    # Update the message with citation, identification and run date
+                    message.doi = cr_doi
+                    message.id_status = True
+                    message.last_crossref_run = harvest_date
+                    continue
                 else:
-                    result = Citation(cr_title=best_match['title'][0],
-                                      cr_type=best_match.get('type'),
-                                      cr_doi=best_match.get('DOI'),
-                                      cr_issue=best_match.get('issue'),
-                                      cr_volume=best_match.get('volume'),
-                                      cr_page=best_match.get('page'),
-                                      cr_pub_publisher=best_match.get('publisher'),
-                                      cr_pub_title=best_match['container-title'][0] if 'container-title' in best_match
-                                      else None,
-                                      pub_issn=best_match['ISSN'][0] if 'ISSN' in best_match else None,
-                                      pub_isbn=best_match['ISBN'][0] if 'ISBN' in best_match else None,
-                                      cr_issued_date=self.partial_date(best_match.get('issued').get('date-parts')),
-                                      message_ids=[message.message_id],
-                                      cr_author=self.concatenate_authors(best_match.get('author')),
-                                      cr_subject=",".join(best_match['subject']) if 'subject' in best_match else None
-                                      )
+                    identified_citations.add(cr_doi)
+                    message.doi = cr_doi
+                    message.id_status = True
+                    message.last_crossref_run = harvest_date
 
-                    identified_citations[cr_doi] = result
+                    citation_results.append(Citation(author=self.concatenate_authors(best_match.get('author')),
+                                            doi=best_match.get('DOI'),
+                                            title=best_match['title'][0],
+                                            type=best_match.get('type'),
+                                            issued_date=self.partial_date(best_match.get('issued').get('date-parts')),
+                                            subject=",".join(best_match['subject']) if 'subject' in best_match
+                                            else None,
+                                            pub_title=best_match['container-title'][0] if 'container-title' in
+                                                                                          best_match else None,
+                                            pub_publisher=best_match.get('publisher'),
+                                            issn=best_match['ISSN'][0] if 'ISSN' in best_match else None,
+                                            isbn=best_match['ISBN'][0] if 'ISBN' in best_match else None,
+                                            issue=best_match.get('issue'),
+                                            volume=best_match.get('volume'),
+                                            page=best_match.get('page'),
+                                            classification_id=3,
+                                            nhm_sub=0
+                                            ))
+
             else:
-                unidentified_citations.append((harvest_date, message.message_id))
+                # Update crossref date and skip if no good match found
+                message.last_crossref_run = harvest_date
 
-        print(f"{len(identified_citations)} matches found, {len(unidentified_citations)} not found.")
+        print(f"{len(citation_results)} matches found, {len(self.messages) - len(citation_results)} not found.")
         print("")
-        return identified_citations, unidentified_citations
+        return citation_results, self.messages
 
 
     @staticmethod
