@@ -38,4 +38,8 @@ identified_citations = [d for d in identified_citations if d.doi not in known_ci
 session.add_all(identified_citations)
 session.flush()
 
+# TODO - change view to populate issn as TRUE if in nhm_pubs table in view instead of here
+# TODO - update nhm_sub table
+# TODO - convert metric to ORM
+# TODO - convert access to ORM
 
