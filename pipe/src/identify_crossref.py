@@ -53,6 +53,7 @@ class IdentifyCrossRef:
                 if cr_doi is None:
                     # Update crossref date and skip if no doi in record
                     message.last_crossref_run = harvest_date
+                    message.id_status = True
                     continue
 
                 # If already seen, store the message id to update message in message_store with doi FK

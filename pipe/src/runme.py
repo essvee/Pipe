@@ -2,7 +2,7 @@
 from datetime import date, timedelta
 from sqlalchemy import or_
 from pipe.src.base import Session
-from pipe.src.db_objects import Message
+from pipe.src.db_objects import Message, Citation
 from pipe.src.harvest_gmail import HarvestGmail
 from pipe.src.identify_crossref import IdentifyCrossRef
 
@@ -27,6 +27,12 @@ identified_citations, id_messages = IdentifyCrossRef(mystery_messages).get_cross
 
 # Update message table for both matched and unmatched messages
 session.add_all(id_messages)
+
+# Get all known citations
+known_citations = {x.doi for x in session.query(Citation)}
+
+# Strip out citations already in the database
+identified_citations = [d for d in identified_citations if d.doi not in known_citations]
 
 # Add new citations
 session.add_all(identified_citations)
