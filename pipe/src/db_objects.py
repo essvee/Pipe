@@ -20,11 +20,8 @@ class Citation(Base):
     issue = Column(String)
     volume = Column(String)
     page = Column(String)
-    classification_id = Column(Integer)
-    nhm_sub = Column(Integer)
-
-    # Need to rethink if this field is necessary/if it can be achieved without a list
-    # message_ids: list
+    classification_id = Column(Integer, default=None)
+    identified_date = Column(Integer, default=None)
 
     def get_values(self):
         """
@@ -33,7 +30,7 @@ class Citation(Base):
         """
         return (self.author, self.doi, self.title, self.type, self.issued_date, self.subject,
                 self.pub_title, self.pub_publisher, self.issn, self.isbn, self.issue, self.volume,
-                self.page, self.classification_id, self.nhm_sub)
+                self.page, self.classification_id, self.identified_date)
 
 
 class Message(Base):
@@ -51,8 +48,8 @@ class Message(Base):
     source = Column(String)
     id_status = Column(Integer)
     label_id = Column(String)
-    doi = Column(String, nullable=True)
-    last_crossref_run = Column(Date, nullable=True)
+    doi = Column(String, default=None)
+    last_crossref_run = Column(Date, default=None)
     snippet_match = Column(Integer)
     highlight_length = Column(Integer)
 

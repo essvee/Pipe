@@ -84,9 +84,8 @@ class IdentifyCrossRef:
                                             issue=best_match.get('issue'),
                                             volume=best_match.get('volume'),
                                             page=best_match.get('page'),
-                                            classification_id=3,
-                                            nhm_sub=0
-                                            ))
+                                            classification_id=None,
+                                            identified_date=harvest_date))
 
             else:
                 # Update crossref date and skip if no good match found
