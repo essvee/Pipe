@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from sqlalchemy import Column, Integer, String, Date, Float
+from sqlalchemy import Column, Integer, String, Date, Float, Boolean
 
 from pipe.src.base import Base
 
@@ -82,3 +82,25 @@ class Metric(Base):
         return (self.bibliometric_id, self.times_cited, self.recent_citations, self.retrieved_date,
                 self.relative_citation_ratio, self.field_citation_ratio, self.doi)
 
+
+class Access(Base):
+    __tablename__ = 'open_access'
+
+    oa_id = Column(Integer, autoincrement=True, primary_key=True)
+    best_oa_url = Column(String)
+    updated_date = Column(Date)
+    retrieved_date = Column(Date)
+    pdf_url = Column(String)
+    is_oa = Column(Boolean)
+    doi = Column(String)
+    doi_url = Column(String)
+    host_type = Column(String)
+    version = Column(String)
+
+    def get_values(self):
+        """
+        Returns the object fields
+        :return: Tuple
+        """
+        return (self.oa_id, self.best_oa_url, self.updated_date, self.retrieved_date,
+                self.pdf_url, self.is_oa, self.doi, self.doi_url, self.host_type, self.version)

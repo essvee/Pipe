@@ -2,12 +2,14 @@
 from datetime import date, timedelta
 from sqlalchemy import or_
 from pipe.src.base import Session
-from pipe.src.db_objects import Message, Citation, Metric
+from pipe.src.db_objects import Message, Citation, Metric, Access
 from pipe.src.dimensions import Dimensions
 from pipe.src.harvest_gmail import HarvestGmail
 from pipe.src.identify_crossref import IdentifyCrossRef
 
 # Connect to Gmail account
+from pipe.src.unpaywall import Unpaywall
+
 messages = HarvestGmail().main()
 
 # Open new db session
@@ -46,11 +48,24 @@ if date.today().day == 1:
     session.flush()
 
     new_metrics = Dimensions(citation_dois).get_citations()
-
-    for x in new_metrics:
-        print(x.get_values())
-
     session.add_all(new_metrics)
     session.flush()
 
-# TODO - convert access to ORM
+# Get access data for citations newly-identified in this pass
+new_access = Unpaywall(identified_citations).get_access_data()
+session.add_all(new_access)
+session.flush()
+
+# Every six months, re-check all Citation records for updated info
+if date.today().day == 15 and (date.today().month == 12 or date.today().month == 6):
+
+    all_records = list(session.query(Citation)
+                       .filter(Citation.classification_id == True, Citation.identified_date != date.today()))
+
+    updated_access_records = Unpaywall(all_records).get_access_data()
+    print(f"{(len(updated_access_records))} updated recs found")
+    session.add_all(updated_access_records)
+    session.flush()
+
+
+
