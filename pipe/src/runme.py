@@ -2,6 +2,7 @@
 from datetime import date, timedelta
 from sqlalchemy import or_
 from pipe.src.base import Session
+from pipe.src.classifier import Classifier
 from pipe.src.db_objects import Message, Citation, Metric, Access
 from pipe.src.dimensions import Dimensions
 from pipe.src.harvest_gmail import HarvestGmail
@@ -67,5 +68,11 @@ if date.today().day == 15 and (date.today().month == 12 or date.today().month ==
     session.add_all(updated_access_records)
     session.flush()
 
+unclassified_citations = list(session.query(Citation).filter(Citation.classification_id == None))
 
+# Classify
+if len(unclassified_citations) > 0:
+    classified_citations = Classifier(unclassified_citations).classify()
+    session.add_all(classified_citations)
+    session.flush()
 
