@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from sqlalchemy import Column, Integer, String, Date
+from sqlalchemy import Column, Integer, String, Date, Float
 
 from pipe.src.base import Base
 
@@ -61,4 +61,24 @@ class Message(Base):
         return (self.message_id, self.email_id, self.title, self.snippet, self.m_author, self.m_pub_title, self.m_pub_year,
                 self.sent_date, self.harvested_date, self.source, self.id_status, self.label_id,
                 self.doi, self.last_crossref_run, self.snippet_match, self.highlight_length)
+
+
+class Metric(Base):
+    __tablename__ = 'bibliometrics'
+
+    bibliometric_id = Column(Integer, autoincrement=True, primary_key=True)
+    times_cited = Column(Integer)
+    recent_citations = Column(Integer)
+    retrieved_date = Column(Date)
+    relative_citation_ratio = Column(Float)
+    field_citation_ratio = Column(Float)
+    doi = Column(String)
+
+    def get_values(self):
+        """
+        Returns the object fields
+        :return: Tuple
+        """
+        return (self.bibliometric_id, self.times_cited, self.recent_citations, self.retrieved_date,
+                self.relative_citation_ratio, self.field_citation_ratio, self.doi)
 

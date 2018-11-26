@@ -2,7 +2,8 @@
 from datetime import date, timedelta
 from sqlalchemy import or_
 from pipe.src.base import Session
-from pipe.src.db_objects import Message, Citation
+from pipe.src.db_objects import Message, Citation, Metric
+from pipe.src.dimensions import Dimensions
 from pipe.src.harvest_gmail import HarvestGmail
 from pipe.src.identify_crossref import IdentifyCrossRef
 
@@ -38,6 +39,18 @@ identified_citations = [d for d in identified_citations if d.doi not in known_ci
 session.add_all(identified_citations)
 session.flush()
 
-# TODO - convert metric to ORM
-# TODO - convert access to ORM
+# Harvest metrics monthly
+if date.today().day == 1:
+    print("Running metrics...")
+    citation_dois = list(session.query(Citation).filter(Citation.classification_id == True))
+    session.flush()
 
+    new_metrics = Dimensions(citation_dois).get_citations()
+
+    for x in new_metrics:
+        print(x.get_values())
+
+    session.add_all(new_metrics)
+    session.flush()
+
+# TODO - convert access to ORM
