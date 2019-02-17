@@ -1,26 +1,28 @@
 import dill as pickle
 import pandas as pd
-from sqlalchemy import create_engine
+from pipe.src.base import engine
 
 
 class Classifier:
     def __init__(self, records):
-        self.dois = [i[0] for i in records]
+        self.records = records
         self.model = self.load_model()
         self.data = self.load_data()
         self.grouped_data = self.shape_data(self.data)
 
-    def load_model(self):
-        with open('src/model_forest.pk', 'rb') as f:
+    @staticmethod
+    def load_model():
+        with open('model_forest.pk', 'rb') as f:
             loaded_forest = pickle.load(f)
         return loaded_forest
 
-    def load_data(self):
-        engine = create_engine('mysql+pymysql://root:r3ptar@localhost/pipe_db')
+    @staticmethod
+    def load_data():
         df = pd.read_sql_table('vw_classifier', engine)
         return df
 
-    def shape_data(self, df):
+    @staticmethod
+    def shape_data(df):
         df3 = df.drop_duplicates().copy()
 
         labels = ['Label_1', 'Label_2', 'Label_3', 'Label_4', 'Label_5', 'Label_8']
@@ -48,15 +50,19 @@ class Classifier:
 
         return grouped_data
 
-
     def classify(self):
-        classification_sql = "UPDATE citation_store SET classification_id = %s WHERE doi = %s"
         preds = self.model.predict(self.grouped_data.iloc[:, 1:].values)
 
         print(f"Starting classification. {len(preds)} to classify...")
 
         self.grouped_data['classification_id'] = pd.Series(preds, index=self.grouped_data.index)
-        results = list(zip(self.grouped_data.classification_id.astype(str), self.grouped_data.doi))
 
-        return classification_sql, results
+        # Extract results
+        results = {key: value for (key, value) in zip(self.grouped_data.doi, self.grouped_data.classification_id.astype(str))}
+
+        # Update records
+        for r in self.records:
+            r.classification_id = results[r.doi]
+
+        return self.records
 

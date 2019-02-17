@@ -3,7 +3,7 @@
 
 from bs4 import BeautifulSoup
 import unicodedata
-from pipe.src.message import Message
+from pipe.src.db_objects import Message
 
 
 class MessageFactory(object):
@@ -34,7 +34,7 @@ class MessageFactory(object):
         """
         Parses email html and extracts bibliographic data
         :param soup: Beautiful soup object representing email html
-        :return: List of Messaege objects
+        :return: List of Message objects
         """
         raw_messages = soup("h3")
         all_messages = []
@@ -54,15 +54,18 @@ class MessageFactory(object):
 
             # Build message object + add to list
             all_messages.append(Message(email_id=self.email_id,
-                                        harvested_date=self.harvested_date,
-                                        sent_date=self.sent_date,
-                                        source=self.source,
                                         title=title,
                                         snippet=snippet_clean,
                                         m_author=parsed_bib_data['m_author'],
                                         m_pub_title=parsed_bib_data['m_pub_title'],
                                         m_pub_year=parsed_bib_data['m_pub_year'],
-                                        label=self.label_id,
+                                        sent_date=self.sent_date,
+                                        harvested_date=self.harvested_date,
+                                        source=self.source,
+                                        id_status=False,
+                                        label_id=self.label_id,
+                                        doi=None,
+                                        last_crossref_run=None,
                                         snippet_match=snippet_match,
                                         highlight_length=highlight_length
                                         ))
