@@ -57,8 +57,8 @@ new_access = Unpaywall(identified_citations).get_access_data()
 session.add_all(new_access)
 session.flush()
 
-# Every six months, re-check all Citation records for updated info
-if date.today().day == 15 and (date.today().month == 12 or date.today().month == 6):
+# Every six months, re-check all Citation records for updated access info
+if date.today().day == 1 and (date.today().month == 12 or date.today().month == 6):
 
     all_records = list(session.query(Citation)
                        .filter(Citation.classification_id == True, Citation.identified_date != date.today()))

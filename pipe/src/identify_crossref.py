@@ -56,9 +56,8 @@ class IdentifyCrossRef:
                     message.id_status = True
                     continue
 
-                # If already seen, store the message id to update message in message_store with doi FK
+                # If already identified, update the message with doi, identification and run date
                 elif cr_doi in identified_citations:
-                    # Update the message with citation, identification and run date
                     message.doi = cr_doi
                     message.id_status = True
                     message.last_crossref_run = harvest_date
@@ -94,7 +93,6 @@ class IdentifyCrossRef:
         print(f"{len(citation_results)} matches found, {len(self.messages) - len(citation_results)} not found.")
         print("")
         return citation_results, self.messages
-
 
     @staticmethod
     def partial_date(part_date):

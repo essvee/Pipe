@@ -11,7 +11,7 @@ class Unpaywall:
 
     def get_access_data(self):
         """
-        Uses list of DOIs used to instantiate the class to query Unpaywall
+        Uses list of DOIs to instantiate class to query Unpaywall
         and return metrics.
         :return: string sql_query + a list of tuples holding data retrieved from Unpaywall
         """

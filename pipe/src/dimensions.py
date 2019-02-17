@@ -18,13 +18,14 @@ class Dimensions:
         """
 
         results = []
-        print("Checking impact metrics...")
+        print(f"Checking impact metrics for {len(self.citation_dois)} citations...")
         # For each DOI in list, retrieve citation metrics
         for citation in self.citation_dois:
 
             # Throttle query rate to comply with API terms of use
             time.sleep(1)
             url = f"https://metrics-api.dimensions.ai/doi/{citation.doi}"
+            print(url)
 
             try:
                 r = requests.get(url)

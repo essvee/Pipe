@@ -3,7 +3,6 @@ import pandas as pd
 from pipe.src.base import engine
 
 
-
 class Classifier:
     def __init__(self, records):
         self.records = records
@@ -11,16 +10,19 @@ class Classifier:
         self.data = self.load_data()
         self.grouped_data = self.shape_data(self.data)
 
-    def load_model(self):
+    @staticmethod
+    def load_model():
         with open('model_forest.pk', 'rb') as f:
             loaded_forest = pickle.load(f)
         return loaded_forest
 
-    def load_data(self):
+    @staticmethod
+    def load_data():
         df = pd.read_sql_table('vw_classifier', engine)
         return df
 
-    def shape_data(self, df):
+    @staticmethod
+    def shape_data(df):
         df3 = df.drop_duplicates().copy()
 
         labels = ['Label_1', 'Label_2', 'Label_3', 'Label_4', 'Label_5', 'Label_8']
@@ -47,7 +49,6 @@ class Classifier:
         grouped_data = df4.groupby(['doi']).agg(aggregations).reset_index()
 
         return grouped_data
-
 
     def classify(self):
         preds = self.model.predict(self.grouped_data.iloc[:, 1:].values)
