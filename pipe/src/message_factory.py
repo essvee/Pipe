@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-
-
 from bs4 import BeautifulSoup
 import unicodedata
 from pipe.src.db_objects import Message

@@ -1,6 +1,7 @@
 import dill as pickle
 import pandas as pd
 from pipe.src.base import engine
+import logging
 
 
 class Classifier:
@@ -53,7 +54,7 @@ class Classifier:
     def classify(self):
         preds = self.model.predict(self.grouped_data.iloc[:, 1:].values)
 
-        print(f"Starting classification. {len(preds)} to classify...")
+        logging.info(f"Starting classification. {len(preds)} citations to classify...")
 
         self.grouped_data['classification_id'] = pd.Series(preds, index=self.grouped_data.index)
 
@@ -63,6 +64,10 @@ class Classifier:
         # Update records
         for r in self.records:
             r.classification_id = results[r.doi]
+
+        classified_true = len([x for x in self.records if x.classification_id == '1'])
+        logging.info(f"Records classified true: {classified_true}")
+        logging.info(f"Records classified false: {len(self.records) - classified_true}")
 
         return self.records
 

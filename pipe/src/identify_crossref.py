@@ -1,7 +1,9 @@
 from datetime import date
+import logging
 from habanero import Crossref
 from fuzzywuzzy import fuzz
 from pipe.src.db_objects import Citation
+from requests import HTTPError
 
 
 class IdentifyCrossRef:
@@ -22,76 +24,82 @@ class IdentifyCrossRef:
         harvest_date = date.today().strftime('%Y-%m-%d')
 
         print("")
-        print('Starting identification:')
+        logging.info(f"Starting crossref identification for {len(self.messages)} messages")
 
         for message in self.messages:
             print(f"CrossRef check for {message.title}...")
             query = message.title if message.m_pub_title is None else f"{message.title} {message.m_pub_title}"
             pub_date = '1990-01-01' if message.m_pub_year is None else f"{message.m_pub_year}-01-01"
-            crossref_result = cr.works(
-                                    query=query,
-                                    filter={'from_pub_date': pub_date},
-                                    limit=1,
-                                    select='DOI,title,author,type,subject,container-title,'
-                                    'subject,publisher,issue,volume,page,ISSN,ISBN,published-online,'
-                                    'issued,link')
 
-            # Update crossref date and skip if no results returned
-            if crossref_result['message']['total-results'] == 0:
-                message.last_crossref_run = harvest_date
+            try:
+                crossref_result = cr.works(
+                                        query=query,
+                                        filter={'from_pub_date': pub_date},
+                                        limit=1,
+                                        select='DOI,title,author,type,subject,container-title,'
+                                        'subject,publisher,issue,volume,page,ISSN,ISBN,published-online,'
+                                        'issued,link')
+
+                # Update crossref date and skip if no results returned
+                if crossref_result['message']['total-results'] == 0:
+                    message.last_crossref_run = harvest_date
+                    continue
+
+                # Compare original title to title of best match returned by CrossRef
+                best_match = crossref_result['message']['items'][0]
+                cr_title = 'Unknown' if 'title' not in best_match else best_match['title'][0]
+                score = fuzz.partial_ratio(message.title, cr_title)
+
+                # If similar, use to create Citation
+                if score >= 90:
+                    cr_doi = best_match.get('DOI')
+
+                    if cr_doi is None:
+                        # Update crossref date and skip if no doi in record
+                        message.last_crossref_run = harvest_date
+                        message.id_status = True
+                        continue
+
+                    # If already identified, update the message with doi, identification and run date
+                    elif cr_doi in identified_citations:
+                        message.doi = cr_doi
+                        message.id_status = True
+                        message.last_crossref_run = harvest_date
+                        continue
+                    else:
+                        identified_citations.add(cr_doi)
+                        message.doi = cr_doi
+                        message.id_status = True
+                        message.last_crossref_run = harvest_date
+
+                        citation_results.append(Citation(author=self.concatenate_authors(best_match.get('author')),
+                                                doi=best_match.get('DOI'),
+                                                title=best_match['title'][0],
+                                                type=best_match.get('type'),
+                                                issued_date=self.partial_date(best_match.get('issued').get('date-parts')),
+                                                subject=",".join(best_match['subject']) if 'subject' in best_match
+                                                else None,
+                                                pub_title=best_match['container-title'][0] if 'container-title' in
+                                                                                              best_match else None,
+                                                pub_publisher=best_match.get('publisher'),
+                                                issn=best_match['ISSN'][0] if 'ISSN' in best_match else None,
+                                                isbn=best_match['ISBN'][0] if 'ISBN' in best_match else None,
+                                                issue=best_match.get('issue'),
+                                                volume=best_match.get('volume'),
+                                                page=best_match.get('page'),
+                                                classification_id=None,
+                                                identified_date=harvest_date))
+
+                else:
+                    # Update crossref date and skip if no good match found
+                    message.last_crossref_run = harvest_date
+
+            except HTTPError as error:
+                logging.warning(f"HTTPError! {error}: {query}")
                 continue
 
-            # Compare original title to title of best match returned by CrossRef
-            best_match = crossref_result['message']['items'][0]
-            cr_title = 'Unknown' if 'title' not in best_match else best_match['title'][0]
-            score = fuzz.partial_ratio(message.title, cr_title)
+        logging.info(f"{len(citation_results)}/{len(self.messages)} messages verified against crossref")
 
-            # If similar, use to create Citation
-            if score >= 90:
-                cr_doi = best_match.get('DOI')
-
-                if cr_doi is None:
-                    # Update crossref date and skip if no doi in record
-                    message.last_crossref_run = harvest_date
-                    message.id_status = True
-                    continue
-
-                # If already identified, update the message with doi, identification and run date
-                elif cr_doi in identified_citations:
-                    message.doi = cr_doi
-                    message.id_status = True
-                    message.last_crossref_run = harvest_date
-                    continue
-                else:
-                    identified_citations.add(cr_doi)
-                    message.doi = cr_doi
-                    message.id_status = True
-                    message.last_crossref_run = harvest_date
-
-                    citation_results.append(Citation(author=self.concatenate_authors(best_match.get('author')),
-                                            doi=best_match.get('DOI'),
-                                            title=best_match['title'][0],
-                                            type=best_match.get('type'),
-                                            issued_date=self.partial_date(best_match.get('issued').get('date-parts')),
-                                            subject=",".join(best_match['subject']) if 'subject' in best_match
-                                            else None,
-                                            pub_title=best_match['container-title'][0] if 'container-title' in
-                                                                                          best_match else None,
-                                            pub_publisher=best_match.get('publisher'),
-                                            issn=best_match['ISSN'][0] if 'ISSN' in best_match else None,
-                                            isbn=best_match['ISBN'][0] if 'ISBN' in best_match else None,
-                                            issue=best_match.get('issue'),
-                                            volume=best_match.get('volume'),
-                                            page=best_match.get('page'),
-                                            classification_id=None,
-                                            identified_date=harvest_date))
-
-            else:
-                # Update crossref date and skip if no good match found
-                message.last_crossref_run = harvest_date
-
-        print(f"{len(citation_results)} matches found, {len(self.messages) - len(citation_results)} not found.")
-        print("")
         return citation_results, self.messages
 
     @staticmethod

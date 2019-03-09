@@ -3,6 +3,7 @@ from pipe.src.db_objects import Metric
 from requests import HTTPError
 import requests
 import time
+import logging
 
 
 class Dimensions:
@@ -20,6 +21,8 @@ class Dimensions:
         results = []
         print(f"Checking impact metrics for {len(self.citation_dois)} citations...")
         # For each DOI in list, retrieve citation metrics
+        no_result_found = 0
+
         for citation in self.citation_dois:
 
             # Throttle query rate to comply with API terms of use
@@ -39,8 +42,10 @@ class Dimensions:
                                       doi=citation.doi))
             # Skip over DOIs which aren't found
             except HTTPError:
+                no_result_found += 1
                 continue
 
-        print(f"Impact metrics found for {len(results)} DOIs.")
+        logging.info(f"Impact metrics found for {len(results)} DOIs.")
+        logging.info(f"Impact metrics not found for {no_result_found} DOIs.")
 
         return results

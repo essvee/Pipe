@@ -2,6 +2,7 @@ from datetime import date
 from requests import HTTPError
 import requests
 from pipe.src.db_objects import Access
+import logging
 
 
 class Unpaywall:
@@ -17,7 +18,7 @@ class Unpaywall:
         """
 
         results = []
-        print("Checking access...")
+        logging.info(f"Checking access for {len(self.records)} DOIs...")
 
         # For each DOI in list, retrieve access details
         for c in self.records:
@@ -52,7 +53,7 @@ class Unpaywall:
             except HTTPError:
                 continue
 
-        print(f"Access data found for {len(results)} DOIs.")
-        print("")
+        # Log results
+        logging.info(f"Access data found for {len(results)} DOIs.")
 
         return results

@@ -3,14 +3,17 @@ from datetime import date, timedelta
 from sqlalchemy import or_
 from pipe.src.base import Session
 from pipe.src.classifier import Classifier
-from pipe.src.db_objects import Message, Citation, Metric, Access
+from pipe.src.db_objects import Message, Citation
 from pipe.src.dimensions import Dimensions
 from pipe.src.harvest_gmail import HarvestGmail
 from pipe.src.identify_crossref import IdentifyCrossRef
-
-# Connect to Gmail account
+import logging
 from pipe.src.unpaywall import Unpaywall
 
+# Set up logger
+logging.basicConfig(filename='citations.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.info("------")
+# Connect to Gmail account
 messages = HarvestGmail().main()
 
 # Open new db session
@@ -18,6 +21,9 @@ session = Session()
 
 # Write new messages to message_store
 session.add_all(messages)
+
+# Log no. new messages written out
+logging.info(f"{len(messages)} new messages writen to message_store.")
 
 # Set cutoff to one month before current date
 cutoff = date.today() - timedelta(days=31)
@@ -40,16 +46,20 @@ identified_citations = [d for d in identified_citations if d.doi not in known_ci
 
 # Add new citations
 session.add_all(identified_citations)
+logging.info(f"{len(identified_citations)} citations written to citation_store.")
 session.flush()
 
 # Harvest metrics monthly
 if date.today().day == 1:
-    print("Running metrics...")
+    logging.info("Running metrics...")
     citation_dois = list(session.query(Citation).filter(Citation.classification_id == True))
     session.flush()
 
     new_metrics = Dimensions(citation_dois).get_citations()
+
+    # Write to bibliometrics table and log results
     session.add_all(new_metrics)
+    logging.info(f"{len(new_metrics)} access metrics written to bibliometrics.")
     session.flush()
 
 # Get access data for citations newly-identified in this pass
@@ -64,7 +74,6 @@ if date.today().day == 1 and (date.today().month == 12 or date.today().month == 
                        .filter(Citation.classification_id == True, Citation.identified_date != date.today()))
 
     updated_access_records = Unpaywall(all_records).get_access_data()
-    print(f"{(len(updated_access_records))} updated recs found")
     session.add_all(updated_access_records)
     session.flush()
 

@@ -9,9 +9,8 @@ from oauth2client import client, tools
 from oauth2client.file import Storage
 import base64
 import argparse
-
 from pipe.src.message_factory import MessageFactory
-
+import logging
 
 class HarvestGmail:
     def __init__(self):
@@ -28,11 +27,15 @@ class HarvestGmail:
         These messages have been retrieved from the Gmail inbox
         and parsed to extract metadata.
         """
+
         # Get authenticated Gmail Service Object
         service = self.get_credentials()
 
         # Retrieve list of ids of unread emails
         unread_emails = self.list_unread_emails(service)
+
+        # Log number of new emails
+        logging.info(f"{len(unread_emails)} new emails harvested.")
 
         # List to hold gapi_emails
         message_objects = []
@@ -51,7 +54,6 @@ class HarvestGmail:
             # Mark emails as read
             self.mark_read(service, unread_emails)
 
-        print(f"{len(message_objects)} new emails found.")
         return message_objects
 
     def email_metadata(self, service, email):
@@ -99,7 +101,7 @@ class HarvestGmail:
             print('Storing credentials to ' + credential_path)
 
         http = credentials.authorize(httplib2.Http())
-        service = discovery.build('gmail', 'v1', http=http)
+        service = discovery.build('gmail', 'v1', http=http, cache_discovery=False)
         return service
 
     @staticmethod
