@@ -6,5 +6,8 @@ server-permissions.txt
 auth.txt
 *.log
 message_export.csv
+gapi_results_messages.csv
 *.xlsx
 *.html
+scratch.py
+email_body.pk
