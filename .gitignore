@@ -4,3 +4,4 @@ client_secret.json
 Icon
 server-permissions.txt
 auth.txt
+*.log
