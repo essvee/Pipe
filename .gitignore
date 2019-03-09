@@ -5,3 +5,6 @@ Icon
 server-permissions.txt
 auth.txt
 *.log
+message_export.csv
+*.xlsx
+*.html
