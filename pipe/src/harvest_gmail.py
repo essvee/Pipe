@@ -12,6 +12,7 @@ import argparse
 from pipe.src.message_factory import MessageFactory
 import logging
 
+
 class HarvestGmail:
     def __init__(self):
         # If modified, delete previously saved credentials at ~/.credentials/gmail-credentials.json
