@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from sqlalchemy import Column, Integer, String, Date, Float, Boolean
-
 from pipe.src.base import Base
 
 
@@ -104,3 +103,52 @@ class Access(Base):
         """
         return (self.oa_id, self.best_oa_url, self.updated_date, self.retrieved_date,
                 self.pdf_url, self.is_oa, self.doi, self.doi_url, self.host_type, self.version)
+
+
+class Name(Base):
+    __tablename__ = 'names'
+
+    name_id = Column(Integer, autoincrement=True, primary_key=True)
+    doi = Column(String)
+    label = Column(String)
+
+    def get_values(self):
+        """
+        Returns the object fields
+        :return: Tuple
+        """
+        return self.name_id, self.doi, self.label
+
+
+class Taxonomy(Base):
+    __tablename__ = 'taxonomy'
+
+    usageKey = Column(Integer, primary_key=True)
+    scientificName = Column(String)
+    canonicalName = Column(String)
+    rank = Column(String)
+    status = Column(String)
+    kingdom = Column(String)
+    phylum = Column(String)
+    order = Column(String)
+    family = Column(String)
+    species = Column(String)
+    genus = Column(String)
+    kingdomKey = Column(Integer)
+    phylumKey = Column(Integer)
+    classKey = Column(Integer)
+    orderKey = Column(Integer)
+    familyKey = Column(Integer)
+    genusKey = Column(Integer)
+    speciesKey = Column(Integer)
+    class_name = Column(String)
+
+    def get_values(self):
+        """
+        Returns the object fields
+        :return: Tuple
+        """
+        return (self.usageKey, self.scientificName, self.canonicalName, self.rank,
+                self.status, self.kingdom, self.phylum, self.order, self.family,
+                self.species, self.genus, self.kingdomKey, self.phylumKey, self.classKey,
+                self.orderKey, self.familyKey, self.genusKey, self.speciesKey, self.class_name)

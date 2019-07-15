@@ -3,12 +3,14 @@ from datetime import date, timedelta
 from sqlalchemy import or_
 from pipe.src.base import Session
 from pipe.src.classifier import Classifier
-from pipe.src.db_objects import Message, Citation
+from pipe.src.db_objects import Message, Citation, Name
 from pipe.src.dimensions import Dimensions
 from pipe.src.harvest_gmail import HarvestGmail
 from pipe.src.identify_crossref import IdentifyCrossRef
 import logging
 from pipe.src.unpaywall import Unpaywall
+from pipe.src.find_names import FindNames
+
 
 # Set up logger
 logging.basicConfig(filename='citations.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -34,6 +36,8 @@ mystery_messages = list(session.query(Message)
                         .filter(Message.id_status == False))
 
 identified_citations, id_messages = IdentifyCrossRef(mystery_messages).get_crossref_match()
+print("crossref identification complete")
+
 
 # Update message table for both matched and unmatched messages
 session.add_all(id_messages)
@@ -48,6 +52,7 @@ identified_citations = [d for d in identified_citations if d.doi not in known_ci
 session.add_all(identified_citations)
 logging.info(f"{len(identified_citations)} citations written to citation_store.")
 session.flush()
+print("crossref identifications written to db")
 
 # Harvest metrics monthly
 if date.today().day == 1:
@@ -62,6 +67,7 @@ if date.today().day == 1:
     logging.info(f"{len(new_metrics)} access metrics written to bibliometrics.")
     session.flush()
 
+print("starting access queries")
 # Get access data for citations newly-identified in this pass
 new_access = Unpaywall(identified_citations).get_access_data()
 session.add_all(new_access)
@@ -78,6 +84,7 @@ if date.today().day == 1 and (date.today().month == 12 or date.today().month == 
     session.flush()
 
 unclassified_citations = list(session.query(Citation).filter(Citation.classification_id == None))
+print("finished access queries - starting classification")
 
 # Classify
 if len(unclassified_citations) > 0:
@@ -85,3 +92,27 @@ if len(unclassified_citations) > 0:
     session.add_all(classified_citations)
     session.flush()
 
+print("classification finished starting name parsing...")
+result = []
+
+# Extract taxonomic names (Limited to new, NHM-ref papers for now)
+nhm_citations = list(session.query(Citation)
+                     .filter(Citation.identified_date == date.today())
+                     .filter(Citation.classification_id == True)
+                     .filter(or_(Citation.type == 'peer-review', Citation.type == 'journal-article')))
+
+# test_list = nhm_citations[0:5]
+names = []
+
+# Get names for each title
+for x in nhm_citations:
+    print(x.title)
+    result.extend(FindNames(x.doi, x.title).get_names())
+
+# Convert each sp. name into a Name object
+for r in result:
+    print(f"{r[0]}: {r[1]}")
+    names.append(Name(doi=r[0], label=r[1]))
+
+session.add_all(names)
+session.flush()
