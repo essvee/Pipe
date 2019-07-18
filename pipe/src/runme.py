@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 from datetime import date, timedelta
+from itertools import chain
+
 from sqlalchemy import or_
 from pipe.src.base import Session
 from pipe.src.classifier import Classifier
-from pipe.src.db_objects import Message, Citation, Name
+from pipe.src.db_objects import Message, Citation, Name, Taxonomy
 from pipe.src.dimensions import Dimensions
 from pipe.src.harvest_gmail import HarvestGmail
 from pipe.src.identify_crossref import IdentifyCrossRef
 import logging
+
+from pipe.src.resolve_name import ResolveName
 from pipe.src.unpaywall import Unpaywall
 from pipe.src.find_names import FindNames
 
@@ -116,3 +120,28 @@ for r in result:
 
 session.add_all(names)
 session.flush()
+
+# Get distinct usage key values already in Taxonomy table
+taxonomy_keys = list(chain.from_iterable(session.query(Taxonomy.usageKey.distinct())))
+
+# Get names to resolve
+unresolved_names = list(session.query(Name).filter(Name.usage_key == None))
+
+#  Resolve names using gbif backbone
+res_names, updated_names = ResolveName(unresolved_names).gbif_name_resolve()
+
+distinct_results = []
+
+# Get rid of duplicates
+for n in res_names:
+    if n.usageKey not in taxonomy_keys:
+        distinct_results.append(n)
+        taxonomy_keys.append(n.usageKey)
+
+session.add_all(updated_names)
+session.flush()
+
+session.add_all(distinct_results)
+session.flush()
+
+print(f"{len(distinct_results)} added to taxonomy table")

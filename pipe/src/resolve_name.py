@@ -1,43 +1,46 @@
 from pygbif import species
-from pipe.src.db_objects import Name, Taxonomy
+from pipe.src.db_objects import Taxonomy
+
 
 class ResolveName:
     def __init__(self, names):
         self.names = names
-        self.results = []
+        self.taxonomy_results = []
 
     def gbif_name_resolve(self):
         for name in self.names:
 
             # Get gbif-resolved name
-            result = species.name_backbone(name=name.label)
+            result = species.name_lookup(q=name.label, limit=1)
 
-            # Ignore any names which don't find a match
-            if 'usageKey' in result:
-                print(f"match for {name.label}: {result['scientificName']}")
+            # Ignore any names which don't find a match (aka result is not empty)
+            if result['results']:
+                # Update Name with usageKey
+                name.usage_key = result['results'][0]['key']
 
-                self.results.append(Taxonomy(usageKey=result['usageKey'],
-                                             scientificName=result['usageKey'],
-                                             canonicalName=result.get('canonicalName', None),
-                                             rank=result.get('rank', None),
-                                             status=result.get('status', None),
-                                             kingdom=result.get('kingdom', None),
-                                             phylum=result.get('phylum', None),
-                                             order=result.get('order', None),
-                                             family=result.get('family', None),
-                                             species=result.get('species', None),
-                                             genus=result.get('genus', None),
-                                             kingdomKey=result.get('kingdomKey', None),
-                                             phylumKey=result.get('phylumKey', None),
-                                             classKey=result.get('classKey', None),
-                                             orderKey=result.get('orderKey', None),
-                                             familyKey=result.get('familyKey', None),
-                                             genusKey=result.get('genusKey', None),
-                                             speciesKey=result.get('speciesKey', None),
-                                             class_name=result.get('class', None)
-                                             ))
+                # Create records for Taxonomy table
+                self.taxonomy_results.append(Taxonomy(usageKey=result['results'][0]['key'],
+                                             scientificName=result['results'][0].get('scientificName', None),
+                                             canonicalName=result['results'][0].get('canonicalName', None),
+                                             rank=result['results'][0].get('rank', None),
+                                             status=result['results'][0].get('status', None),
+                                             kingdom=result['results'][0].get('kingdom', None),
+                                             phylum=result['results'][0].get('phylum', None),
+                                             order=result['results'][0].get('order', None),
+                                             family=result['results'][0].get('family', None),
+                                             species=result['results'][0].get('species', None),
+                                             genus=result['results'][0].get('genus', None),
+                                             kingdomKey=result['results'][0].get('kingdomKey', None),
+                                             phylumKey=result['results'][0].get('phylumKey', None),
+                                             classKey=result['results'][0].get('classKey', None),
+                                             orderKey=result['results'][0].get('orderKey', None),
+                                             familyKey=result['results'][0].get('familyKey', None),
+                                             genusKey=result['results'][0].get('genusKey', None),
+                                             speciesKey=result['results'][0].get('speciesKey', None),
+                                             class_name=result['results'][0].get('class', None))
+                                             )
             else:
                 print(f"No match for: {name.label}")
                 continue
 
-        return self.results
+        return self.taxonomy_results, self.names

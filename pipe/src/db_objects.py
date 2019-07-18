@@ -111,6 +111,7 @@ class Name(Base):
     name_id = Column(Integer, autoincrement=True, primary_key=True)
     doi = Column(String)
     label = Column(String)
+    usage_key = Column(Integer)
 
     def get_values(self):
         """
