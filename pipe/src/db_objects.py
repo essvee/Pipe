@@ -112,13 +112,14 @@ class Name(Base):
     doi = Column(String)
     label = Column(String)
     usage_key = Column(Integer)
+    rundate = Column(Date)
 
     def get_values(self):
         """
         Returns the object fields
         :return: Tuple
         """
-        return self.name_id, self.doi, self.label
+        return self.name_id, self.doi, self.label, self.rundate
 
 
 class Taxonomy(Base):
@@ -143,6 +144,7 @@ class Taxonomy(Base):
     genusKey = Column(Integer)
     speciesKey = Column(Integer)
     class_name = Column(String)
+    rundate = Column(Date)
 
     def get_values(self):
         """
@@ -152,4 +154,4 @@ class Taxonomy(Base):
         return (self.usageKey, self.scientificName, self.canonicalName, self.rank,
                 self.status, self.kingdom, self.phylum, self.order, self.family,
                 self.species, self.genus, self.kingdomKey, self.phylumKey, self.classKey,
-                self.orderKey, self.familyKey, self.genusKey, self.speciesKey, self.class_name)
+                self.orderKey, self.familyKey, self.genusKey, self.speciesKey, self.class_name, self.rundate)

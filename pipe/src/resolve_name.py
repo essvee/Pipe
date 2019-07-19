@@ -1,3 +1,5 @@
+from datetime import date
+
 from pygbif import species
 from pipe.src.db_objects import Taxonomy
 
@@ -37,7 +39,8 @@ class ResolveName:
                                              familyKey=result['results'][0].get('familyKey', None),
                                              genusKey=result['results'][0].get('genusKey', None),
                                              speciesKey=result['results'][0].get('speciesKey', None),
-                                             class_name=result['results'][0].get('class', None))
+                                             class_name=result['results'][0].get('class', None),
+                                             rundate=date.today())
                                              )
             else:
                 print(f"No match for: {name.label}")

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from datetime import date, timedelta
 from itertools import chain
-
 from sqlalchemy import or_
 from pipe.src.base import Session
 from pipe.src.classifier import Classifier
@@ -10,7 +9,6 @@ from pipe.src.dimensions import Dimensions
 from pipe.src.harvest_gmail import HarvestGmail
 from pipe.src.identify_crossref import IdentifyCrossRef
 import logging
-
 from pipe.src.resolve_name import ResolveName
 from pipe.src.unpaywall import Unpaywall
 from pipe.src.find_names import FindNames
@@ -39,9 +37,8 @@ mystery_messages = list(session.query(Message)
                         .filter(or_(Message.last_crossref_run == None, Message.last_crossref_run < cutoff))
                         .filter(Message.id_status == False))
 
+# Get bib data from crossref and update messages with confirmed DOI
 identified_citations, id_messages = IdentifyCrossRef(mystery_messages).get_crossref_match()
-print("crossref identification complete")
-
 
 # Update message table for both matched and unmatched messages
 session.add_all(id_messages)
@@ -91,43 +88,33 @@ unclassified_citations = list(session.query(Citation).filter(Citation.classifica
 print("finished access queries - starting classification")
 
 # Classify
-if len(unclassified_citations) > 0:
+if unclassified_citations:
     classified_citations = Classifier(unclassified_citations).classify()
     session.add_all(classified_citations)
     session.flush()
 
 print("classification finished starting name parsing...")
-result = []
 
-# Extract taxonomic names (Limited to new, NHM-ref papers for now)
+# Extract taxonomic names (Limited to new papers)
 nhm_citations = list(session.query(Citation)
                      .filter(Citation.identified_date == date.today())
-                     .filter(Citation.classification_id == True)
-                     .filter(or_(Citation.type == 'peer-review', Citation.type == 'journal-article')))
-
-# test_list = nhm_citations[0:5]
-names = []
+                     .filter(or_(Citation.type == 'peer-review', Citation.type == 'journal-article')))\
 
 # Get names for each title
-for x in nhm_citations:
-    print(x.title)
-    result.extend(FindNames(x.doi, x.title).get_names())
+result = [FindNames(x.doi, x.title).get_names() for x in nhm_citations]
 
-# Convert each sp. name into a Name object
-for r in result:
-    print(f"{r[0]}: {r[1]}")
-    names.append(Name(doi=r[0], label=r[1]))
-
+# Convert each sp. name into a Name object + write to db
+names = [Name(doi=r[0], label=r[1], rundate=date.today()) for r in result]
 session.add_all(names)
 session.flush()
 
 # Get distinct usage key values already in Taxonomy table
 taxonomy_keys = list(chain.from_iterable(session.query(Taxonomy.usageKey.distinct())))
 
-# Get names to resolve
+# Retrieve names in need of resolution
 unresolved_names = list(session.query(Name).filter(Name.usage_key == None))
 
-#  Resolve names using gbif backbone
+#  Match names against gbif backbone
 res_names, updated_names = ResolveName(unresolved_names).gbif_name_resolve()
 
 distinct_results = []
