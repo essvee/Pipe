@@ -98,10 +98,12 @@ print("classification finished starting name parsing...")
 # Extract taxonomic names (Limited to new papers)
 nhm_citations = list(session.query(Citation)
                      .filter(Citation.identified_date == date.today())
-                     .filter(or_(Citation.type == 'peer-review', Citation.type == 'journal-article')))\
+                     .filter(or_(Citation.type == 'peer-review', Citation.type == 'journal-article')))
 
 # Get names for each title
 result = [FindNames(x.doi, x.title).get_names() for x in nhm_citations]
+
+
 
 # Convert each sp. name into a Name object + write to db
 names = [Name(doi=r[0], label=r[1], rundate=date.today()) for r in result]
@@ -132,3 +134,4 @@ session.add_all(distinct_results)
 session.flush()
 
 print(f"{len(distinct_results)} added to taxonomy table")
+#
