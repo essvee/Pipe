@@ -18,6 +18,6 @@ class FindNames:
             entities = a.to_dict()['resolutions']
             result.extend([(self.doi, entity['entity']['label']) for entity in entities])
 
-        # Return as set to get rid of duplicates
-        return set(result)
+        # Return as set to get rid of duplicates + filter out empty results
+        return list(filter(None, list(set(result))))
 
