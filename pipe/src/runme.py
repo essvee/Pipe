@@ -101,9 +101,9 @@ nhm_citations = list(session.query(Citation)
                      .filter(or_(Citation.type == 'peer-review', Citation.type == 'journal-article')))
 
 # Get names for each title
-result = [FindNames(x.doi, x.title).get_names() for x in nhm_citations]
-
-
+result = []
+for x in nhm_citations:
+    result.extend(FindNames(x.doi, x.title).get_names())
 
 # Convert each sp. name into a Name object + write to db
 names = [Name(doi=r[0], label=r[1], rundate=date.today()) for r in result]

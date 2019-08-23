@@ -11,3 +11,4 @@ gapi_results_messages.csv
 *.html
 scratch.py
 email_body.pk
+citations.log
