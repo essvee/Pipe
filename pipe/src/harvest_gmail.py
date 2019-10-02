@@ -17,7 +17,7 @@ class HarvestGmail:
     def __init__(self):
         # If modified, delete previously saved credentials at ~/.credentials/gmail-credentials.json
         self.scopes = 'https://www.googleapis.com/auth/gmail.modify'
-        self.client_secret_file = '/Users/essvee/Documents/Project/Pipe/pipe/src/client_secret.json'
+        self.client_secret_file = 'client_secret.json'
         self.application_name = 'DCP Pipeline'
 
     def main(self):
