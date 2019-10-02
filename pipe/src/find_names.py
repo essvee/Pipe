@@ -19,5 +19,7 @@ class FindNames:
             result.extend([(self.doi, entity['entity']['label']) for entity in entities])
 
         # Return as set to get rid of duplicates + filter out empty results
+        for r in set(result):
+            print(f" Name found: {r}")
         return list(filter(None, list(set(result))))
 

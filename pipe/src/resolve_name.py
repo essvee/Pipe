@@ -1,5 +1,4 @@
 from datetime import date
-
 from pygbif import species
 from pipe.src.db_objects import Taxonomy
 
