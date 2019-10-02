@@ -22,12 +22,12 @@ messages = HarvestGmail().main()
 
 # Open new db session
 session = Session()
-
 # Write new messages to message_store
 session.add_all(messages)
 
 # Log no. new messages written out
 logging.info(f"{len(messages)} new messages writen to message_store.")
+session.flush()
 
 # Set cutoff to one month before current date
 cutoff = date.today() - timedelta(days=31)
@@ -35,7 +35,7 @@ cutoff = date.today() - timedelta(days=31)
 # Query message_store for records which haven't been checked against crossref in the last month (or ever)
 mystery_messages = list(session.query(Message)
                         .filter(or_(Message.last_crossref_run == None, Message.last_crossref_run < cutoff))
-                        .filter(Message.id_status == False))
+                        .filter(Message.id_status == False).limit(50))
 
 # Get bib data from crossref and update messages with confirmed DOI
 identified_citations, id_messages = IdentifyCrossRef(mystery_messages).get_crossref_match()
