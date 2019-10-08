@@ -13,3 +13,5 @@ scratch.py
 email_body.pk
 citations.log
 __pycache__
+
+deploy/gmail-credentials.json
