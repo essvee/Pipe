@@ -12,6 +12,7 @@ cd /opt/app || exit
 
 mysql --host=$DATABASE_HOST --user=root --password=pass --database=pipe_db --protocol=tcp < deploy/pipe_schema.sql
 
-python -m spacy download en_core_web_md
+wget -O /usr/local/lib/python3.7/site-packages/epitator/importers/doid_extension.ttl https://github.com/ecohealthalliance/EpiTator/raw/master/epitator/importers/doid_extension.ttl
+python -m epitator.importers.import_all
 
 python -m pipe.src.runme
