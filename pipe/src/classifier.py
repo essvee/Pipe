@@ -2,6 +2,7 @@ import dill as pickle
 import pandas as pd
 from pipe.src.base import engine
 import logging
+import os
 
 
 class Classifier:
@@ -13,7 +14,7 @@ class Classifier:
 
     @staticmethod
     def load_model():
-        with open('model_forest.pk', 'rb') as f:
+        with open(f'{os.path.dirname(__file__)}/model_forest.pk', 'rb') as f:
             loaded_forest = pickle.load(f)
         return loaded_forest
 
