@@ -3,6 +3,7 @@
 ### Requirements
 - [docker](https://docs.docker.com)
 - [docker compose](https://docs.docker.com/compose/install)
+- [git](https://git-scm.com)
 
 ### Process
 
@@ -11,7 +12,7 @@
     ```sh
     git clone https://github.com/alycejenni/Pipe.git
     cd Pipe
-    docker-compose up
+    docker-compose up --abort-on-container-exit
     ```
    
 2. Get & store Gmail credentials:
