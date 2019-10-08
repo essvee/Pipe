@@ -14,4 +14,4 @@ email_body.pk
 citations.log
 __pycache__
 
-deploy/gmail-credentials.json
+gmail-credentials.json

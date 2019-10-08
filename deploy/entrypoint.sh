@@ -12,7 +12,13 @@ cd /opt/app || exit
 
 mysql --host=$DATABASE_HOST --user=root --password=pass --database=pipe_db --protocol=tcp < deploy/pipe_schema.sql
 
-wget -O /usr/local/lib/python3.7/site-packages/epitator/importers/doid_extension.ttl https://github.com/ecohealthalliance/EpiTator/raw/master/epitator/importers/doid_extension.ttl
-python -m epitator.importers.import_all
 
-python -m pipe.src.runme
+
+if [ -f "pipe/data/gmail-credentials.json" ]; then
+  python -m pipe.src.runme
+else
+  # this doesn't work if you put it in the Dockerfile but
+  # it takes ages so we only want to do it once
+  python -m epitator.importers.import_all
+  echo "Now run:\n\tdocker run -it pipe_backend python /opt/app/deploy/auth.py --noauth_local_webserver"
+fi
