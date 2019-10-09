@@ -17,7 +17,7 @@ class HarvestGmail:
     def __init__(self):
         # If modified, delete previously saved credentials at ~/.credentials/gmail-credentials.json
         self.scopes = 'https://www.googleapis.com/auth/gmail.modify'
-        self.client_secret_file = 'client_secret.json'
+        self.client_secret_file = 'pipe/data/client_secret.json'
         self.application_name = 'DCP Pipeline'
 
     def main(self):
@@ -84,13 +84,8 @@ class HarvestGmail:
             Credentials, the obtained credential.
             :return: Gmail Service object
         """
-        home_dir = os.path.expanduser('~')
-        credential_dir = os.path.join(home_dir, '.credentials')
+        credential_path = 'pipe/data/gmail-credentials.json'
 
-        if not os.path.exists(credential_dir):
-            os.makedirs(credential_dir)
-        credential_path = os.path.join(credential_dir,
-                                       'gmail-credentials.json')
         store = Storage(credential_path)
         credentials = store.get()
         flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()

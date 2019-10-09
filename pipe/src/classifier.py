@@ -13,7 +13,7 @@ class Classifier:
 
     @staticmethod
     def load_model():
-        with open('model_forest.pk', 'rb') as f:
+        with open('pipe/data/model_forest.pk', 'rb') as f:
             loaded_forest = pickle.load(f)
         return loaded_forest
 

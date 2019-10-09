@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+
+  backend:
+    build:
+      context: .
+      dockerfile: deploy/backend.dockerfile
+    environment:
+      DATABASE_URL: mysql://pipe:pass@db:3306/pipe_db
+      DATABASE_HOST: db
+    depends_on:
+      - db
+    volumes:
+      - .:/opt/app
+
+  db:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: pipe_db
+      MYSQL_USER: pipe
+      MYSQL_PASSWORD: pass
+      MYSQL_ROOT_PASSWORD: pass
