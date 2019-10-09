@@ -10,7 +10,7 @@
 1. Build the containers:
 
     ```sh
-    git clone https://github.com/alycejenni/Pipe.git
+    git clone https://github.com/NaturalHistoryMuseum/Pipe.git
     cd Pipe
     docker-compose up --abort-on-container-exit
     ```
