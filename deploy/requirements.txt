@@ -15,3 +15,4 @@ google-api-python-client
 spacy
 python-Levenshtein
 scikit-learn
+nltk
