@@ -22,9 +22,11 @@ class BaseHarvester(object):
         """
         pass
 
-    def store_citations(self):
+    @classmethod
+    def store_citations(cls, parsed_citations, session):
         """
         Store the extracted citation data.
         :return:
         """
-        pass
+        session.add_all(parsed_citations)
+        session.flush()

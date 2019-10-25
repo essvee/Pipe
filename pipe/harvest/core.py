@@ -1,5 +1,6 @@
 from ._utils import logger
 from .gmail import GmailHarvester
+from ._base import BaseHarvester
 
 
 class HarvestCore:
@@ -16,3 +17,8 @@ class HarvestCore:
             parsed_citations += harvester.parse_data(data)
         logger.debug(f'Finished harvest. {len(parsed_citations)} new citations extracted.')
         return parsed_citations
+
+    @classmethod
+    def store(cls, session, parsed_citations):
+        BaseHarvester.store_citations(parsed_citations, session)
+        logger.debug(f"{len(parsed_citations)} new citations writen to parsedcitation_store.")

@@ -16,16 +16,11 @@ from pipe.src.identify_crossref import IdentifyCrossRef
 from pipe.src.resolve_name import ResolveName
 from pipe.src.unpaywall import Unpaywall
 
-parsed_citations = HarvestCore.run()
-
 # Open new db session
 session = Session()
-# Write new parsedcitations to parsedcitation_store
-session.add_all(parsed_citations)
 
-# Log no. new parsedcitations written out
-logging.info(f"{len(parsed_citations)} new citations writen to parsedcitation_store.")
-session.flush()
+parsed_citations = HarvestCore.run()
+HarvestCore.store(session, parsed_citations)
 
 # Set cutoff to one month before current date
 cutoff = date.today() - timedelta(days=31)
