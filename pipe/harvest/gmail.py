@@ -74,21 +74,22 @@ class GmailHarvester(BaseHarvester):
         """
         try:
             query = 'is:unread from:scholaralerts-noreply@google.com'
-            response = self.service.users().messages().list(userId='me',
-                                                            q=query,
-                                                            ).execute()
+            page_token = None
             p_emails = []
-            if 'messages' in response:
+            while True:
+                request = self.service.users().messages().list(userId='me',
+                                                               q=query, pageToken=page_token)
+                response = request.execute()
+                if 'messages' not in response:
+                    break
                 p_emails.extend(response['messages'])
-                while 'nextPageToken' in response:
-                    page_token = response['nextPageToken']
-                    response = self.service.users().messages().list(userId='me', q='is:unread',
-                                                                    pageToken=page_token).execute()
-                    p_emails.extend(response['messages'])
+                if 'nextPageToken' not in response:
+                    break
+                page_token = response['nextPageToken']
             return p_emails
 
         except errors.HttpError as error:
-            _utils.logger.debug(f'An error occurred during unread email retrieval: ${error}')
+            _utils.logger.error(f'An error occurred during unread email retrieval: ${error}')
 
 
 class ParsedCitationFactory(object):
