@@ -105,11 +105,11 @@ class ParsedCitationFactory(object):
 
         for i in raw_citations:
             # Retrieve + parse bib_data
-            bib_data = i.next_sibling
+            bib_data = i.find_next_sibling('div')
             parsed_bib_data = cls._parse_email_bib_data(_utils.clean_string(bib_data.text))
 
             # Get snippet + features from highlights
-            snippet = bib_data.next_sibling
+            snippet = soup.find(class_='gse_alrt_sni')
             snippet_distance = _utils.minimum_word_distance(snippet.text)
             snippet_clean = _utils.clean_string(" ".join(snippet.stripped_strings))
             snippet_match = snippet_distance is not None
