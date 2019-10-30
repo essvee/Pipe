@@ -196,7 +196,7 @@ class ParsedCitationFactory(object):
             return email_data
         except errors.HttpError as error:
             _utils.logger.error(f'An error occurred during full-text message retrieval: {error}')
-            raise Exception
+            raise error
 
     def _get_email_label(self, email_data):
         label = None
