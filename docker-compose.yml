@@ -9,6 +9,7 @@ services:
     environment:
       DATABASE_URL: mysql://pipe:pass@db:3306/pipe_db
       DATABASE_HOST: db
+      PYTHONUNBUFFERED: 1
     depends_on:
       - db
     volumes:

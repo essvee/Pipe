@@ -1,47 +1,42 @@
 #!/usr/bin/env python
+import logging
 from datetime import date, timedelta
 from itertools import chain
+
 from sqlalchemy import or_
+
+from pipe.harvest import HarvestCore
+from pipe.models import ParsedCitation
 from pipe.src.base import Session
 from pipe.src.classifier import Classifier
-from pipe.src.db_objects import Message, Citation, Name, Taxonomy
+from pipe.src.db_objects import Citation, Name, Taxonomy
 from pipe.src.dimensions import Dimensions
-from pipe.src.harvest_gmail import HarvestGmail
+from pipe.src.find_names import FindNames
 from pipe.src.identify_crossref import IdentifyCrossRef
-import logging
 from pipe.src.resolve_name import ResolveName
 from pipe.src.unpaywall import Unpaywall
-from pipe.src.find_names import FindNames
-
-
-# Set up logger
-logging.basicConfig(filename='citations.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logging.info("------")
-# Connect to Gmail account
-messages = HarvestGmail().main()
 
 # Open new db session
 session = Session()
-# Write new messages to message_store
-session.add_all(messages)
 
-# Log no. new messages written out
-logging.info(f"{len(messages)} new messages writen to message_store.")
-session.flush()
+parsed_citations = HarvestCore.run()
+HarvestCore.store(session, parsed_citations)
 
 # Set cutoff to one month before current date
 cutoff = date.today() - timedelta(days=31)
 
-# Query message_store for records which haven't been checked against crossref in the last month (or ever)
-mystery_messages = list(session.query(Message)
-                        .filter(or_(Message.last_crossref_run == None, Message.last_crossref_run < cutoff))
-                        .filter(Message.id_status == False).limit(50))
+# Query parsedcitation_store for records which haven't been checked against crossref 
+# in the last month (or ever)
+mystery_parsedcitations = list(session.query(ParsedCitation)
+                        .filter(or_(ParsedCitation.last_crossref_run == None,
+                                    ParsedCitation.last_crossref_run < cutoff))
+                        .filter(ParsedCitation.id_status == False).limit(50))
 
-# Get bib data from crossref and update messages with confirmed DOI
-identified_citations, id_messages = IdentifyCrossRef(mystery_messages).get_crossref_match()
+# Get bib data from crossref and update parsedcitations with confirmed DOI
+identified_citations, id_parsedcitations = IdentifyCrossRef(mystery_parsedcitations).get_crossref_match()
 
-# Update message table for both matched and unmatched messages
-session.add_all(id_messages)
+# Update parsedcitation table for both matched and unmatched parsedcitations
+session.add_all(id_parsedcitations)
 
 # Get all known citations
 known_citations = {x.doi for x in session.query(Citation)}
@@ -78,7 +73,8 @@ session.flush()
 if date.today().day == 1 and (date.today().month == 12 or date.today().month == 6):
 
     all_records = list(session.query(Citation)
-                       .filter(Citation.classification_id == True, Citation.identified_date != date.today()))
+                       .filter(Citation.classification_id == True,
+                               Citation.identified_date != date.today()))
 
     updated_access_records = Unpaywall(all_records).get_access_data()
     session.add_all(updated_access_records)
@@ -98,7 +94,8 @@ print("classification finished starting name parsing...")
 # Extract taxonomic names (Limited to new papers)
 nhm_citations = list(session.query(Citation)
                      .filter(Citation.identified_date == date.today())
-                     .filter(or_(Citation.type == 'peer-review', Citation.type == 'journal-article')))
+                     .filter(
+    or_(Citation.type == 'peer-review', Citation.type == 'journal-article')))
 
 # Get names for each title
 result = []

@@ -61,9 +61,9 @@ CREATE TABLE IF NOT EXISTS `labels` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table pipe_db.message_store
-CREATE TABLE IF NOT EXISTS `message_store` (
-  `message_id` int(11) NOT NULL AUTO_INCREMENT,
+-- Dumping structure for table pipe_db.parsedcitation_store
+CREATE TABLE IF NOT EXISTS `parsedcitation_store` (
+  `parsedcitation_id` int(11) NOT NULL AUTO_INCREMENT,
   `email_id` varchar(40) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `title` mediumtext COLLATE utf8mb4_unicode_ci,
   `snippet` mediumtext COLLATE utf8mb4_unicode_ci,
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `message_store` (
   `last_crossref_run` date DEFAULT NULL,
   `snippet_match` tinyint(1) DEFAULT NULL,
   `highlight_length` int(11) DEFAULT NULL,
-  PRIMARY KEY (`message_id`)
+  PRIMARY KEY (`parsedcitation_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS `taxonomy` (
 
 -- Dumping structure for view pipe_db.vw_classifier
 -- Creating temporary table to overcome VIEW dependency errors
-CREATE TABLE `vw_classifier` (
+CREATE TABLE IF NOT EXISTS `vw_classifier` (
 	`doi` VARCHAR(100) NOT NULL COLLATE 'utf8mb4_unicode_ci',
 	`nhm_sub` INT(1) NOT NULL,
 	`snippet_match` TINYINT(1) NULL,
@@ -164,7 +164,7 @@ CREATE TABLE `vw_classifier` (
 -- Dumping structure for view pipe_db.vw_classifier
 -- Removing temporary table and create final VIEW structure
 DROP TABLE IF EXISTS `vw_classifier`;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vw_classifier` AS select `c`.`doi` AS `doi`,if((`c`.`issn` in (select `p`.`issn` from `nhm_pubs` `p`) and (`c`.`issn` is not null)),true,false) AS `nhm_sub`,`m`.`snippet_match` AS `snippet_match`,`m`.`highlight_length` AS `highlight_length`,`m`.`label_id` AS `label_id` from (`citation_store` `c` join `message_store` `m`) where ((`c`.`doi` = `m`.`doi`) and (`c`.`classification_id` is null)) order by `c`.`doi`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vw_classifier` AS select `c`.`doi` AS `doi`,if((`c`.`issn` in (select `p`.`issn` from `nhm_pubs` `p`) and (`c`.`issn` is not null)),true,false) AS `nhm_sub`,`m`.`snippet_match` AS `snippet_match`,`m`.`highlight_length` AS `highlight_length`,`m`.`label_id` AS `label_id` from (`citation_store` `c` join `parsedcitation_store` `m`) where ((`c`.`doi` = `m`.`doi`) and (`c`.`classification_id` is null)) order by `c`.`doi`;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;

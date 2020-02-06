@@ -15,3 +15,5 @@ citations.log
 __pycache__
 
 gmail-credentials.json
+
+.coverage
