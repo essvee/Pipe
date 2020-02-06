@@ -10,7 +10,7 @@ echo "MySQL started"
 
 cd /opt/app || exit
 
-mysql --host=$DATABASE_HOST --user=root --password=pass --database=pipe_db --protocol=tcp < deploy/pipe_schema.sql
+mysql --host=$DATABASE_HOST --user=root --password=pass --database=annette_db --protocol=tcp < deploy/annette_schema.sql
 
 if [ ! -f "/root/.epitator.sqlitedb" ]; then
   # this doesn't work if you put it in the Dockerfile but
@@ -19,8 +19,8 @@ if [ ! -f "/root/.epitator.sqlitedb" ]; then
   python -m epitator.importers.import_all
 fi
 
-if [ -f "pipe/data/gmail-credentials.json" ]; then
-  python -m pipe.src.runme
+if [ -f "annette/data/gmail-credentials.json" ]; then
+  python -m annette.src.runme
 else
-  echo "Now run:\n\tdocker run -it pipe_backend python /opt/app/deploy/auth.py --noauth_local_webserver"
+  echo "Now run:\n\tdocker run -it annette_backend python /opt/app/deploy/auth.py --noauth_local_webserver"
 fi

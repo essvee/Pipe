@@ -6,7 +6,7 @@ import nltk
 import logging
 
 
-logger = logging.getLogger('pipe.harvest')
+logger = logging.getLogger('annette.harvest')
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
 handler.setFormatter(formatter)

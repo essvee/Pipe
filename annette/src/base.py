@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 
-with open('pipe/data/auth.txt', 'r') as f:
+with open('annette/data/auth.txt', 'r') as f:
     PWD, USR, DB = f.read().splitlines()
 
 SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{USR}:{PWD}@{DB}?charset=utf8"

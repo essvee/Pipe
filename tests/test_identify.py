@@ -1,8 +1,8 @@
 import unittest
 from datetime import date
 
-from pipe.src.identify_crossref import IdentifyCrossRef
-from pipe.src.message import Message
+from annette.src.identify_crossref import IdentifyCrossRef
+from annette.src.message import Message
 
 class TestIdentify(unittest.TestCase):
 

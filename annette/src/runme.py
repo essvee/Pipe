@@ -5,16 +5,16 @@ from itertools import chain
 
 from sqlalchemy import or_
 
-from pipe.harvest import HarvestCore
-from pipe.models import ParsedCitation
-from pipe.src.base import Session
-from pipe.src.classifier import Classifier
-from pipe.src.db_objects import Citation, Name, Taxonomy
-from pipe.src.dimensions import Dimensions
-from pipe.src.find_names import FindNames
-from pipe.src.identify_crossref import IdentifyCrossRef
-from pipe.src.resolve_name import ResolveName
-from pipe.src.unpaywall import Unpaywall
+from annette.harvest import HarvestCore
+from annette.models import ParsedCitation
+from annette.src.base import Session
+from annette.src.classifier import Classifier
+from annette.src.db_objects import Citation, Name, Taxonomy
+from annette.src.dimensions import Dimensions
+from annette.src.find_names import FindNames
+from annette.src.identify_crossref import IdentifyCrossRef
+from annette.src.resolve_name import ResolveName
+from annette.src.unpaywall import Unpaywall
 
 # Open new db session
 session = Session()
@@ -25,7 +25,7 @@ HarvestCore.store(session, parsed_citations)
 # Set cutoff to one month before current date
 cutoff = date.today() - timedelta(days=31)
 
-# Query parsedcitation_store for records which haven't been checked against crossref 
+# Query parsedcitation_store for records which haven't been checked against crossref
 # in the last month (or ever)
 mystery_parsedcitations = list(session.query(ParsedCitation)
                         .filter(or_(ParsedCitation.last_crossref_run == None,

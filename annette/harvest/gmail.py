@@ -9,14 +9,14 @@ from bs4 import BeautifulSoup
 from oauth2client import client, tools
 from oauth2client.file import Storage
 
-from pipe.models.citation import ParsedCitation
+from annette.models.citation import ParsedCitation
 from . import _utils
 from ._base import BaseHarvester
 
 
 class GmailHarvester(BaseHarvester):
     scopes = 'https://www.googleapis.com/auth/gmail.modify'
-    client_secret_file = 'pipe/data/client_secret.json'
+    client_secret_file = 'annette/data/client_secret.json'
     application_name = 'DCP Pipeline'
 
     def __init__(self):
@@ -51,7 +51,7 @@ class GmailHarvester(BaseHarvester):
 
         :return: Gmail Service object
         """
-        credential_path = 'pipe/data/gmail-credentials.json'
+        credential_path = 'annette/data/gmail-credentials.json'
 
         store = Storage(credential_path)
         credentials = store.get()
