@@ -1,5 +1,5 @@
 from datetime import date
-from pipe.src.db_objects import Metric
+from annette.src.db_objects import Metric
 from requests import HTTPError
 import requests
 import time

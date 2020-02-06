@@ -1,6 +1,6 @@
 from datetime import date
 from pygbif import species
-from pipe.src.db_objects import Taxonomy
+from annette.src.db_objects import Taxonomy
 
 
 class ResolveName:

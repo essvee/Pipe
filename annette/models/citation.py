@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Date, Integer, String
 
-from pipe.src.base import Base
+from annette.src.base import Base
 
 
 class ParsedCitation(Base):

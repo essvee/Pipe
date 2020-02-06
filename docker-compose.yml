@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: deploy/backend.dockerfile
     environment:
-      DATABASE_URL: mysql://pipe:pass@db:3306/pipe_db
+      DATABASE_URL: mysql://annette:pass@db:3306/annette_db
       DATABASE_HOST: db
       PYTHONUNBUFFERED: 1
     depends_on:
@@ -21,7 +21,7 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: pipe_db
-      MYSQL_USER: pipe
+      MYSQL_DATABASE: annette_db
+      MYSQL_USER: annette
       MYSQL_PASSWORD: pass
       MYSQL_ROOT_PASSWORD: pass

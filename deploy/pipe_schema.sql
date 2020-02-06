@@ -12,11 +12,11 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
 
--- Dumping database structure for pipe_db
-CREATE DATABASE IF NOT EXISTS `pipe_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `pipe_db`;
+-- Dumping database structure for annette_db
+CREATE DATABASE IF NOT EXISTS `annette_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `annette_db`;
 
--- Dumping structure for table pipe_db.bibliometrics
+-- Dumping structure for table annette_db.bibliometrics
 CREATE TABLE IF NOT EXISTS `bibliometrics` (
   `bibliometric_id` int(11) NOT NULL AUTO_INCREMENT,
   `times_cited` int(11) DEFAULT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `bibliometrics` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table pipe_db.citation_store
+-- Dumping structure for table annette_db.citation_store
 CREATE TABLE IF NOT EXISTS `citation_store` (
   `author` mediumtext COLLATE utf8mb4_unicode_ci,
   `doi` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `citation_store` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table pipe_db.labels
+-- Dumping structure for table annette_db.labels
 CREATE TABLE IF NOT EXISTS `labels` (
   `label_id` varchar(8) COLLATE utf8mb4_unicode_ci NOT NULL,
   `label_name` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `labels` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table pipe_db.parsedcitation_store
+-- Dumping structure for table annette_db.parsedcitation_store
 CREATE TABLE IF NOT EXISTS `parsedcitation_store` (
   `parsedcitation_id` int(11) NOT NULL AUTO_INCREMENT,
   `email_id` varchar(40) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS `parsedcitation_store` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table pipe_db.names
+-- Dumping structure for table annette_db.names
 CREATE TABLE IF NOT EXISTS `names` (
   `name_id` int(11) NOT NULL AUTO_INCREMENT,
   `doi` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `names` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table pipe_db.nhm_pubs
+-- Dumping structure for table annette_db.nhm_pubs
 CREATE TABLE IF NOT EXISTS `nhm_pubs` (
   `issn` varchar(9) COLLATE utf8mb4_unicode_ci NOT NULL,
   `pub_title` text COLLATE utf8mb4_unicode_ci,
@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS `nhm_pubs` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table pipe_db.open_access
+-- Dumping structure for table annette_db.open_access
 CREATE TABLE IF NOT EXISTS `open_access` (
   `oa_id` int(11) NOT NULL AUTO_INCREMENT,
   `best_oa_url` mediumtext COLLATE utf8mb4_unicode_ci,
@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS `open_access` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table pipe_db.taxonomy
+-- Dumping structure for table annette_db.taxonomy
 CREATE TABLE IF NOT EXISTS `taxonomy` (
   `usageKey` int(11) NOT NULL,
   `scientificName` text COLLATE utf8mb4_unicode_ci,
@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS `taxonomy` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for view pipe_db.vw_classifier
+-- Dumping structure for view annette_db.vw_classifier
 -- Creating temporary table to overcome VIEW dependency errors
 CREATE TABLE IF NOT EXISTS `vw_classifier` (
 	`doi` VARCHAR(100) NOT NULL COLLATE 'utf8mb4_unicode_ci',
@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS `vw_classifier` (
 	`label_id` VARCHAR(8) NULL COLLATE 'utf8mb4_unicode_ci'
 ) ENGINE=MyISAM;
 
--- Dumping structure for view pipe_db.vw_classifier
+-- Dumping structure for view annette_db.vw_classifier
 -- Removing temporary table and create final VIEW structure
 DROP TABLE IF EXISTS `vw_classifier`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vw_classifier` AS select `c`.`doi` AS `doi`,if((`c`.`issn` in (select `p`.`issn` from `nhm_pubs` `p`) and (`c`.`issn` is not null)),true,false) AS `nhm_sub`,`m`.`snippet_match` AS `snippet_match`,`m`.`highlight_length` AS `highlight_length`,`m`.`label_id` AS `label_id` from (`citation_store` `c` join `parsedcitation_store` `m`) where ((`c`.`doi` = `m`.`doi`) and (`c`.`classification_id` is null)) order by `c`.`doi`;

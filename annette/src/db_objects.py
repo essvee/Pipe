@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from sqlalchemy import Column, Integer, String, Date, Float, Boolean
-from pipe.src.base import Base
+from annette.src.base import Base
 
 
 class Citation(Base):

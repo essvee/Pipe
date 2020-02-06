@@ -5,9 +5,9 @@ import pytest
 from apiclient import errors
 from googleapiclient import _auth, discovery, discovery
 
-from pipe.harvest import BaseHarvester
-from pipe.harvest.gmail import GmailHarvester
-from pipe.models.citation import ParsedCitation
+from annette.harvest import BaseHarvester
+from annette.harvest.gmail import GmailHarvester
+from annette.models.citation import ParsedCitation
 from . import _constants as constants
 
 
@@ -120,8 +120,8 @@ class TestGmailHarvester(TestHarvester):
             'id': '16e08a1e6d147fa6',
             'threadId': '16e08a1e6d147fa6'
             }]
-        mocker.patch('pipe.harvest.gmail.GmailHarvester.list_unread_emails',
+        mocker.patch('annette.harvest.gmail.GmailHarvester.list_unread_emails',
                      return_value=email_id_list)
-        mocker.patch('pipe.harvest.gmail.ParsedCitationFactory.get_email',
+        mocker.patch('annette.harvest.gmail.ParsedCitationFactory.get_email',
                      side_effect=constants.email_list)
         assert harvester.get_data() == constants.email_list

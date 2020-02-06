@@ -1,7 +1,7 @@
 import unittest
 
-from pipe.src.dimensions import Dimensions
-from pipe.src.unpaywall import Unpaywall
+from annette.src.dimensions import Dimensions
+from annette.src.unpaywall import Unpaywall
 
 
 class TestEnhance(unittest.TestCase):

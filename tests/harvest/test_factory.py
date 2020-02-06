@@ -3,7 +3,7 @@ import mock
 import pytest
 from googleapiclient import _auth, discovery
 from apiclient import errors
-from pipe.harvest.gmail import ParsedCitationFactory
+from annette.harvest.gmail import ParsedCitationFactory
 from . import _constants as constants
 
 
