@@ -1,39 +1,28 @@
-from sqlalchemy import Column, Date, Integer, String
+from sqlalchemy import Column, Date, ForeignKey, String
+from sqlalchemy.orm import relationship
 
-from annette.src.base import Base
+from . import decorators
+from .base import Base
+from .extracted import ExtractedCitation
 
 
-class ParsedCitation(Base):
-    __tablename__ = 'parsedcitation_store'
+@decorators.column_access
+@decorators.logged
+class Citation(Base):
+    __tablename__ = 'citations'
 
-    parsedcitation_id = Column(Integer, autoincrement=True, primary_key=True)
-    email_id = Column(String)
+    doi = Column(String, primary_key=True)
+    author = Column(String)
     title = Column(String)
-    snippet = Column(String)
-    m_author = Column(String)
-    m_pub_title = Column(String)
-    m_pub_year = Column(Integer)
-    sent_date = Column(Date)
-    harvested_date = Column(Date)
-    source = Column(String)
-    id_status = Column(Integer)
-    label_id = Column(String)
-    doi = Column(String, default=None)
-    last_crossref_run = Column(Date, default=None)
-    snippet_match = Column(Integer)
-    highlight_length = Column(Integer)
-
-    def get_values(self):
-        """
-        Returns the object fields
-        :return: Tuple
-        """
-        return (
-            self.parsedcitation_id, self.email_id, self.title, self.snippet, self.m_author,
-            self.m_pub_title, self.m_pub_year, self.sent_date, self.harvested_date, self.source,
-            self.id_status, self.label_id, self.doi, self.last_crossref_run, self.snippet_match,
-            self.highlight_length)
-
-
-class Citation(ParsedCitation):
-    pass
+    type = Column(String)
+    issued_date = Column(Date)
+    subject = Column(String)
+    pub_title = Column(String)
+    pub_publisher = Column(String)
+    issn = Column(String)
+    isbn = Column(String)
+    issue = Column(String)
+    volume = Column(String)
+    page = Column(String)
+    ecid = Column(ForeignKey(ExtractedCitation.id))
+    raw = relationship('ExtractedCitation', backref='citation')

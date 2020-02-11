@@ -7,7 +7,7 @@ from googleapiclient import _auth, discovery, discovery
 
 from annette.harvest import BaseHarvester
 from annette.harvest.gmail import GmailHarvester
-from annette.models.citation import ParsedCitation
+from annette.models.citation import ExtractedCitation
 from . import _constants as constants
 
 
@@ -22,10 +22,10 @@ class TestHarvester:
     def parse_data_input(self):
         return []
 
-    def test_parse_data_returns_parsed_citations(self, harvester, parse_data_input):
+    def test_parse_data_returns_extracted_citations(self, harvester, parse_data_input):
         if getattr(harvester.parse_data, '__isabstractmethod__', False):
             pytest.skip('Unimplemented abstract method.')
-        assert isinstance(harvester.parse_data(parse_data_input)[0], ParsedCitation)
+        assert isinstance(harvester.parse_data(parse_data_input)[0], ExtractedCitation)
 
 
 class TestGmailHarvester(TestHarvester):
@@ -122,6 +122,6 @@ class TestGmailHarvester(TestHarvester):
             }]
         mocker.patch('annette.harvest.gmail.GmailHarvester.list_unread_emails',
                      return_value=email_id_list)
-        mocker.patch('annette.harvest.gmail.ParsedCitationFactory.get_email',
+        mocker.patch('annette.harvest.gmail.GmailParser.get_email',
                      side_effect=constants.email_list)
         assert harvester.get_data() == constants.email_list
