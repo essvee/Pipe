@@ -18,6 +18,7 @@ from annette.src.unpaywall import Unpaywall
 # Open new db session
 session = Session()
 
+
 with RunLogManager(session) as logger:
     # HARVEST STAGE
     extracted_citations = HarvestCore.run()

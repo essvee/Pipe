@@ -25,6 +25,7 @@ class RunLogManager(object):
 
     def __enter__(self):
         self.log_entry.start = dt.now()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.log_entry.end = dt.now()

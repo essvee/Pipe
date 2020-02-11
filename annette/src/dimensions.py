@@ -1,9 +1,11 @@
-from datetime import date
-from annette.src.db_objects import Metric
-from requests import HTTPError
-import requests
-import time
 import logging
+import time
+from datetime import date
+
+import requests
+from requests import HTTPError
+
+from annette.models import Metrics
 
 
 class Dimensions:
@@ -34,12 +36,13 @@ class Dimensions:
                 r = requests.get(url)
                 r.raise_for_status()
 
-                results.append(Metric(times_cited=r.json()['times_cited'] or 0,
-                                      recent_citations=r.json()['recent_citations'] or 0,
-                                      retrieved_date=self.date_retrieved,
-                                      relative_citation_ratio=r.json()['relative_citation_ratio'] or 0,
-                                      field_citation_ratio=r.json()['field_citation_ratio'] or 0,
-                                      doi=citation.doi))
+                results.append(Metrics(times_cited=r.json()['times_cited'] or 0,
+                                       recent_citations=r.json()['recent_citations'] or 0,
+                                       retrieved_date=self.date_retrieved,
+                                       relative_citation_ratio=r.json()[
+                                                                   'relative_citation_ratio'] or 0,
+                                       field_citation_ratio=r.json()['field_citation_ratio'] or 0,
+                                       doi=citation.doi))
             # Skip over DOIs which aren't found
             except HTTPError:
                 no_result_found += 1

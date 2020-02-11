@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Date, ForeignKey, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects import mysql
 
 from . import decorators
 from .base import Base
@@ -11,18 +12,18 @@ from .extracted import ExtractedCitation
 class Citation(Base):
     __tablename__ = 'citations'
 
-    doi = Column(String, primary_key=True)
-    author = Column(String)
-    title = Column(String)
-    type = Column(String)
+    doi = Column(String(100), primary_key=True)
+    author = Column(mysql.MEDIUMTEXT)
+    title = Column(mysql.MEDIUMTEXT)
+    type = Column(mysql.MEDIUMTEXT)
     issued_date = Column(Date)
-    subject = Column(String)
-    pub_title = Column(String)
-    pub_publisher = Column(String)
-    issn = Column(String)
-    isbn = Column(String)
-    issue = Column(String)
-    volume = Column(String)
-    page = Column(String)
+    subject = Column(mysql.MEDIUMTEXT)
+    pub_title = Column(mysql.MEDIUMTEXT)
+    pub_publisher = Column(mysql.MEDIUMTEXT)
+    issn = Column(String(9))
+    isbn = Column(String(14))
+    issue = Column(mysql.MEDIUMTEXT)
+    volume = Column(mysql.MEDIUMTEXT)
+    page = Column(mysql.MEDIUMTEXT)
     ecid = Column(ForeignKey(ExtractedCitation.id))
     raw = relationship('ExtractedCitation', backref='citation')

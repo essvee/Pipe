@@ -5,9 +5,12 @@ from .. import decorators
 
 
 @decorators.column_access
-@decorators.enhancer('bibliometrics')
+@decorators.enhancer
 @decorators.logged
 class Metrics(Base):
+    __tablename__ = 'bibliometrics'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
     times_cited = Column(Integer)
     recent_citations = Column(Integer)
     retrieved_date = Column(Date)

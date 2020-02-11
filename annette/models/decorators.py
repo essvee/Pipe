@@ -8,20 +8,15 @@ def column_access(cls):
     return cls
 
 
-def enhancer(tablename):
+def enhancer(cls):
     from .citation import Citation
-
-    def _enhancer(cls):
-        __tablename__ = tablename
-        cls.id = Column(Integer, autoincrement=True, primary_key=True)
-        cls.doi = Column(ForeignKey(Citation.doi))
-        cls.citation = relationship('Citation', backref=tablename)
-        return cls
-
-    return _enhancer
+    cls.doi = Column(ForeignKey(Citation.doi))
+    cls.citation = relationship('Citation', backref=cls.__tablename__)
+    return cls
 
 
 def logged(cls):
     from .log import RunLog
     cls.log_id = Column(ForeignKey(RunLog.id))
-    cls.log = relationship('RunLog', backref='results')
+    cls.log = relationship('RunLog', backref=cls.__tablename__ + '_entries')
+    return cls

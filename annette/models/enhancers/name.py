@@ -1,12 +1,15 @@
 from sqlalchemy import Column, Integer, String
 
-from ..base import Base
 from .. import decorators
+from ..base import Base
 
 
 @decorators.column_access
-@decorators.enhancer('names')
+@decorators.enhancer
 @decorators.logged
 class Name(Base):
-    label = Column(String)
+    __tablename__ = 'names'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    label = Column(String(100))
     usage_key = Column(Integer)
