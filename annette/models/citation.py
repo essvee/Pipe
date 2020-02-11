@@ -1,39 +1,29 @@
-from sqlalchemy import Column, Date, Integer, String
+from sqlalchemy import Column, Date, ForeignKey, String
+from sqlalchemy.orm import relationship
+from sqlalchemy.dialects import mysql
 
-from annette.src.base import Base
-
-
-class ParsedCitation(Base):
-    __tablename__ = 'parsedcitation_store'
-
-    parsedcitation_id = Column(Integer, autoincrement=True, primary_key=True)
-    email_id = Column(String)
-    title = Column(String)
-    snippet = Column(String)
-    m_author = Column(String)
-    m_pub_title = Column(String)
-    m_pub_year = Column(Integer)
-    sent_date = Column(Date)
-    harvested_date = Column(Date)
-    source = Column(String)
-    id_status = Column(Integer)
-    label_id = Column(String)
-    doi = Column(String, default=None)
-    last_crossref_run = Column(Date, default=None)
-    snippet_match = Column(Integer)
-    highlight_length = Column(Integer)
-
-    def get_values(self):
-        """
-        Returns the object fields
-        :return: Tuple
-        """
-        return (
-            self.parsedcitation_id, self.email_id, self.title, self.snippet, self.m_author,
-            self.m_pub_title, self.m_pub_year, self.sent_date, self.harvested_date, self.source,
-            self.id_status, self.label_id, self.doi, self.last_crossref_run, self.snippet_match,
-            self.highlight_length)
+from . import decorators
+from .base import Base
+from .extracted import ExtractedCitation
 
 
-class Citation(ParsedCitation):
-    pass
+@decorators.column_access
+@decorators.logged
+class Citation(Base):
+    __tablename__ = 'citations'
+
+    doi = Column(String(100), primary_key=True)
+    author = Column(mysql.MEDIUMTEXT)
+    title = Column(mysql.MEDIUMTEXT)
+    type = Column(mysql.MEDIUMTEXT)
+    issued_date = Column(Date)
+    subject = Column(mysql.MEDIUMTEXT)
+    pub_title = Column(mysql.MEDIUMTEXT)
+    pub_publisher = Column(mysql.MEDIUMTEXT)
+    issn = Column(String(9))
+    isbn = Column(String(14))
+    issue = Column(mysql.MEDIUMTEXT)
+    volume = Column(mysql.MEDIUMTEXT)
+    page = Column(mysql.MEDIUMTEXT)
+    ecid = Column(ForeignKey(ExtractedCitation.id))
+    raw = relationship('ExtractedCitation', backref='citation')

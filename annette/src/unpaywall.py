@@ -1,7 +1,7 @@
 from datetime import date
 from requests import HTTPError
 import requests
-from annette.src.db_objects import Access
+from annette.models import Access
 import logging
 
 

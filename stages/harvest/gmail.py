@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from oauth2client import client, tools
 from oauth2client.file import Storage
 
-from annette.models.citation import ParsedCitation
+from annette.models import ExtractedCitation
 from . import _utils
 from ._base import BaseHarvester
 
@@ -31,17 +31,17 @@ class GmailHarvester(BaseHarvester):
         These messages have been retrieved from the Gmail inbox and parsed to extract metadata.
         """
         unread_emails = self.list_unread_emails()
-        factory = ParsedCitationFactory(self.service)
+        factory = GmailParser(self.service)
 
         _utils.logger.debug(f"Starting harvest. {len(unread_emails)} new emails found.")
 
         return [factory.get_email(unread['id']) for unread in unread_emails]
 
     def parse_data(self, data):
-        parsed_citations = []
+        extracted_citations = []
         for email in data:
-            parsed_citations += ParsedCitationFactory.parse_email(email)
-        return parsed_citations
+            extracted_citations += GmailParser.parse_email(email)
+        return extracted_citations
 
     def get_credentials(self):
         """
@@ -92,7 +92,7 @@ class GmailHarvester(BaseHarvester):
             _utils.logger.error(f'An error occurred during unread email retrieval: ${error}')
 
 
-class ParsedCitationFactory(object):
+class GmailParser(object):
     def __init__(self, service):
         self.service = service
 
@@ -101,7 +101,7 @@ class ParsedCitationFactory(object):
         soup = BeautifulSoup(email['body'], 'html.parser')
 
         raw_citations = soup('h3')
-        parsed_citations = []
+        extracted_citations = []
 
         for i in raw_citations:
             # Retrieve + parse bib_data
@@ -119,24 +119,21 @@ class ParsedCitationFactory(object):
             print(f'Email {email["id"]}. Parsing "{title}"...')
 
             # Build message object + add to list
-            parsed_citations.append(ParsedCitation(email_id=email['id'],
-                                                   title=title,
-                                                   snippet=snippet_clean,
-                                                   m_author=parsed_bib_data['m_author'],
-                                                   m_pub_title=parsed_bib_data['m_pub_title'],
-                                                   m_pub_year=parsed_bib_data['m_pub_year'],
-                                                   sent_date=email['received_date'],
-                                                   harvested_date=email['harvested_date'],
-                                                   source='GS',
-                                                   id_status=False,
-                                                   label_id=email['label'],
-                                                   doi=None,
-                                                   last_crossref_run=None,
-                                                   snippet_match=snippet_match,
-                                                   highlight_length=snippet_distance
-                                                   ))
+            extracted_citations.append(ExtractedCitation(email_id=email['id'],
+                                                         title=title,
+                                                         snippet=snippet_clean,
+                                                         author=parsed_bib_data['m_author'],
+                                                         pub_title=parsed_bib_data['m_pub_title'],
+                                                         pub_year=parsed_bib_data['m_pub_year'],
+                                                         sent_date=email['received_date'],
+                                                         source='GS',
+                                                         id_status=False,
+                                                         label_id=email['label'],
+                                                         snippet_match=snippet_match,
+                                                         highlight_length=snippet_distance
+                                                         ))
 
-        return parsed_citations
+        return extracted_citations
 
     @classmethod
     def _parse_email_bib_data(cls, bib_data):

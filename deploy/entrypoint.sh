@@ -10,7 +10,7 @@ echo "MySQL started"
 
 cd /opt/app || exit
 
-mysql --host=$DATABASE_HOST --user=root --password=pass --database=annette_db --protocol=tcp < deploy/annette_schema.sql
+#mysql --host=$DATABASE_HOST --user=root --password=pass --database=annette_db --protocol=tcp < deploy/annette_schema.sql
 
 if [ ! -f "/root/.epitator.sqlitedb" ]; then
   # this doesn't work if you put it in the Dockerfile but

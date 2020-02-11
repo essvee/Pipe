@@ -18,15 +18,15 @@ class BaseHarvester(object):
     def parse_data(self, data):
         """
         Parse the input data to retrieve basic citation data.
-        :return: list of ParsedCitation instances
+        :return: list of ExtractedCitation instances
         """
         pass
 
     @classmethod
-    def store_citations(cls, parsed_citations, session):
+    def store_citations(cls, extracted_citations, session):
         """
         Store the extracted citation data.
         :return:
         """
-        session.add_all(parsed_citations)
+        session.add_all(extracted_citations)
         session.flush()

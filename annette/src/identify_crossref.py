@@ -2,7 +2,7 @@ from datetime import date
 import logging
 from habanero import Crossref
 from fuzzywuzzy import fuzz
-from annette.src.db_objects import Citation
+from annette.models import Citation
 from requests import HTTPError
 
 
@@ -42,7 +42,7 @@ class IdentifyCrossRef:
 
                 # Update crossref date and skip if no results returned
                 if crossref_result['message']['total-results'] == 0:
-                    message.last_crossref_run = harvest_date
+                    message.last_identify_run = harvest_date
                     continue
 
                 # Compare original title to title of best match returned by CrossRef
@@ -56,7 +56,7 @@ class IdentifyCrossRef:
 
                     if cr_doi is None:
                         # Update crossref date and skip if no doi in record
-                        message.last_crossref_run = harvest_date
+                        message.last_identify_run = harvest_date
                         message.id_status = True
                         continue
 
@@ -64,13 +64,13 @@ class IdentifyCrossRef:
                     elif cr_doi in identified_citations:
                         message.doi = cr_doi
                         message.id_status = True
-                        message.last_crossref_run = harvest_date
+                        message.last_identify_run = harvest_date
                         continue
                     else:
                         identified_citations.add(cr_doi)
                         message.doi = cr_doi
                         message.id_status = True
-                        message.last_crossref_run = harvest_date
+                        message.last_identify_run = harvest_date
 
                         citation_results.append(Citation(author=self.concatenate_authors(best_match.get('author')),
                                                 doi=best_match.get('DOI'),
@@ -92,7 +92,7 @@ class IdentifyCrossRef:
 
                 else:
                     # Update crossref date and skip if no good match found
-                    message.last_crossref_run = harvest_date
+                    message.last_identify_run = harvest_date
 
             except HTTPError as error:
                 logging.warning(f"HTTPError! {error}: {query}")
