@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from stages.harvest import HarvestCore
-from stages.identify import IdentifyCore
+from annette.stages.harvest import HarvestCore
+from annette.stages.identify import IdentifyCore
 from annette.models import Session, RunLogManager
 
 # Open new db session

@@ -3,7 +3,7 @@ import mock
 import pytest
 from googleapiclient import _auth, discovery
 from apiclient import errors
-from stages.harvest.gmail import GmailParser
+from annette.stages.harvest.gmail import GmailParser
 from . import _constants as constants
 
 

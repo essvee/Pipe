@@ -5,8 +5,8 @@ import pytest
 from apiclient import errors
 from googleapiclient import _auth, discovery, discovery
 
-from stages.harvest import BaseHarvester
-from stages.harvest.gmail import GmailHarvester
+from annette.stages.harvest import BaseHarvester
+from annette.stages.harvest.gmail import GmailHarvester
 from annette.models.citation import ExtractedCitation
 from . import _constants as constants
 
