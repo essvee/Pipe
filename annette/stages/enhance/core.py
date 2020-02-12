@@ -1,9 +1,10 @@
 from ._utils import logger
 from ._base import BaseEnhancer
+from .dimensions import DimensionsEnhancer
 
 
 class EnhanceCore:
-    enhancers = []
+    enhancers = [DimensionsEnhancer]
 
     @classmethod
     def run(cls, session_manager):
@@ -14,7 +15,7 @@ class EnhanceCore:
             enhancer = enhancer_type()
             citations = enhancer.get_data(session_manager)
             for citation in citations:
-                metadata += enhancer.get_metadata(citation)
+                metadata += enhancer.get_metadata(session_manager, citation)
         session_manager.log(metadata)
         logger.debug(f'Finished enhancing. {len(metadata)} new pieces of metadata found.')
         return metadata

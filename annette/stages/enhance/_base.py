@@ -15,7 +15,7 @@ class BaseEnhancer(object):
         return session_manager.session.query(Citation).filter(Citation.relevant).all()
 
     @abstractmethod
-    def get_metadata(self, citation):
+    def get_metadata(self, session_manager, citation):
         """
         Get extra metadata about the citation.
         :return: list of enhancer/metadata instances
@@ -23,10 +23,10 @@ class BaseEnhancer(object):
         pass
 
     @classmethod
-    def store_metadata(cls, metadata, session):
+    def store_metadata(cls, metadata, session_manager):
         """
         Store the extracted citation data.
         :return:
         """
-        session.add_all(metadata)
-        session.flush()
+        session_manager.session.add_all(metadata)
+        session_manager.session.flush()
