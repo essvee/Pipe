@@ -1,6 +1,6 @@
 import dill as pickle
 import pandas as pd
-from annette.models.base import engine
+from annette.db.session import engine
 import logging
 
 

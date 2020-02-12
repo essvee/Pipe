@@ -5,7 +5,7 @@ from datetime import date
 import requests
 from requests import HTTPError
 
-from annette.models import Metrics
+from annette.db.models import Metrics
 
 
 class Dimensions:

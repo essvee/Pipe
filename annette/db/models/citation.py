@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects import mysql
 
 from . import decorators
-from .base import Base
+from ..session import Base
 from .extracted import ExtractedCitation
 
 
