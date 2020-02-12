@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from annette.db.models import Citation
 
 
 class BaseEnhancer(object):
@@ -6,13 +7,12 @@ class BaseEnhancer(object):
     Get extra metadata for citations.
     """
 
-    @abstractmethod
-    def get_data(self):
+    def get_data(self, session_manager):
         """
         Load the input data.
         :return:
         """
-        pass
+        return session_manager.session.query(Citation).filter(Citation.relevant).all()
 
     @abstractmethod
     def get_metadata(self, citation):

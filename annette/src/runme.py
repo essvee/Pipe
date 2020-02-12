@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from annette.stages.harvest import HarvestCore
 from annette.stages.identify import IdentifyCore
+from annette.stages.enhance import EnhanceCore
 from annette.db import SessionManager
 
 with SessionManager() as session_manager:
@@ -46,7 +47,8 @@ with SessionManager() as session_manager:
     # ----------------------------------------------------------------------------------------------
 
     # ENHANCE STAGE
-
+    metadata = EnhanceCore.run(session_manager)
+    EnhanceCore.store(session_manager, metadata)
     session_manager.complete('enhance')
 
     # ----------------------------------------------------------------------------------------------
