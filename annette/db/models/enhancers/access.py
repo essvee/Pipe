@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, Date, String, Integer
 from sqlalchemy.dialects import mysql
 
-from ..base import Base
+from ...session import Base
 from .. import decorators
 
 

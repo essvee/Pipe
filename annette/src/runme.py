@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 from annette.stages.harvest import HarvestCore
 from annette.stages.identify import IdentifyCore
-from annette.models import session_scope, RunLogManager
+from annette.db import SessionManager
 
-with session_scope() as session, RunLogManager(session) as logger:
+with SessionManager() as session_manager:
     # HARVEST STAGE
-    extracted_citations = HarvestCore.run()
-    HarvestCore.store(session, extracted_citations)
-    logger.complete('harvest')
+    extracted_citations = HarvestCore.run(session_manager)
+    HarvestCore.store(session_manager, extracted_citations)
+    session_manager.complete('harvest')
 
     # IDENTIFY STAGE
     citations = IdentifyCore.run()
-    IdentifyCore.store(session, citations)
-    logger.complete('identify')
+    IdentifyCore.store(session_manager, citations)
+    session_manager.complete('identify')
 
     # old code -------------------------------------------------------------------------------------
     # # Set cutoff to one month before current date
@@ -47,7 +47,7 @@ with session_scope() as session, RunLogManager(session) as logger:
 
     # ENHANCE STAGE
 
-    logger.complete('enhance')
+    session_manager.complete('enhance')
 
     # ----------------------------------------------------------------------------------------------
     # # Harvest metrics monthly
@@ -87,7 +87,7 @@ with session_scope() as session, RunLogManager(session) as logger:
 
     # CLASSIFY STAGE
 
-    logger.complete('classify')
+    session_manager.complete('classify')
 
     # ----------------------------------------------------------------------------------------------
     # if unclassified_citations:

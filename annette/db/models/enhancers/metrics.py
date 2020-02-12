@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Date, Float, Integer
 
-from ..base import Base
+from ...session import Base
 from .. import decorators
 
 

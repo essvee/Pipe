@@ -2,7 +2,7 @@ from datetime import date
 import logging
 from habanero import Crossref
 from fuzzywuzzy import fuzz
-from annette.models import Citation
+from annette.db.models import Citation
 from requests import HTTPError
 
 
