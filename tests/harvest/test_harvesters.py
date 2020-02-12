@@ -7,7 +7,7 @@ from googleapiclient import _auth, discovery, discovery
 
 from annette.stages.harvest import BaseHarvester
 from annette.stages.harvest.gmail import GmailHarvester
-from annette.models.citation import ExtractedCitation
+from annette.db.models.citation import ExtractedCitation
 from . import _constants as constants
 
 

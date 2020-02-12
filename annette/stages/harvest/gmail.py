@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from oauth2client import client, tools
 from oauth2client.file import Storage
 
-from annette.models import ExtractedCitation
+from annette.db.models import ExtractedCitation
 from . import _utils
 from ._base import BaseHarvester
 

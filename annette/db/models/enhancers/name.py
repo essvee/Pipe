@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String
 
 from .. import decorators
-from ..base import Base
+from ...session import Base
 
 
 @decorators.column_access
