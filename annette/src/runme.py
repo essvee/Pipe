@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 from annette.stages.harvest import HarvestCore
 from annette.stages.identify import IdentifyCore
-from annette.models import Session, RunLogManager
+from annette.models import session_scope, RunLogManager
 
-# Open new db session
-session = Session()
-
-with RunLogManager(session) as logger:
+with session_scope() as session, RunLogManager(session) as logger:
     # HARVEST STAGE
     extracted_citations = HarvestCore.run()
     HarvestCore.store(session, extracted_citations)
