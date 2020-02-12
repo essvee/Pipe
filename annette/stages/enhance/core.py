@@ -1,10 +1,11 @@
 from ._utils import logger
 from ._base import BaseEnhancer
 from .dimensions import DimensionsEnhancer
+from .unpaywall import UnpaywallEnhancer
 
 
 class EnhanceCore:
-    enhancers = [DimensionsEnhancer]
+    enhancers = [DimensionsEnhancer, UnpaywallEnhancer]
 
     @classmethod
     def run(cls, session_manager):

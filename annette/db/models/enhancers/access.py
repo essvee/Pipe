@@ -14,7 +14,6 @@ class Access(Base):
     id = Column(Integer, autoincrement=True, primary_key=True)
     best_oa_url = Column(mysql.MEDIUMTEXT)
     updated_date = Column(Date)
-    retrieved_date = Column(Date)
     pdf_url = Column(mysql.MEDIUMTEXT)
     is_oa = Column(Boolean)
     host_type = Column(String(25))

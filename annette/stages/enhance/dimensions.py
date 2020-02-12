@@ -19,7 +19,7 @@ class DimensionsEnhancer(BaseEnhancer):
         try:
             r = requests.get(url)
             if not r.ok:
-                raise requests.HTTPError
+                r.raise_for_status()
         except requests.HTTPError:
             return []
 
