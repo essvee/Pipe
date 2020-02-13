@@ -1,4 +1,5 @@
 from abc import abstractmethod
+
 from annette.db.models import Citation
 
 
@@ -32,3 +33,12 @@ class BaseEnhancer(object):
         """
         self.session_manager.session.add_all(metadata)
         self.session_manager.session.flush()
+
+    @property
+    def run_now(self):
+        """
+        A true/false value indicating whether the enhancer should be run at this time; for making
+        sure an enhancer only runs e.g. once a month.
+        :return: boolean
+        """
+        return True

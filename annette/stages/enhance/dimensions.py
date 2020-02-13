@@ -1,8 +1,9 @@
 import time
+from datetime import datetime as dt, timedelta
 
 import requests
 
-from annette.db.models import Metrics
+from annette.db.models import Metrics, RunLog
 from ._base import BaseEnhancer
 
 
@@ -34,6 +35,23 @@ class DimensionsEnhancer(BaseEnhancer):
         if previous is None:
             return [Metrics(**row_values)]
         else:
+            changed = False
             for k, v in row_values.items():
+                if str(getattr(previous, k)) == str(v):
+                    continue
                 setattr(previous, k, v)
-            return [previous]
+                changed = True
+            return [previous] if changed else []
+
+    @property
+    def run_now(self):
+        """
+        Run every four weeks.
+        :return:
+        """
+        last_run = self.session_manager.session.query(Metrics).join(RunLog).order_by(
+            RunLog.end.desc()).first()
+        if last_run is None:
+            return True
+        else:
+            return last_run.log.end < (dt.now() - timedelta(weeks=4))

@@ -12,11 +12,14 @@ class EnhanceCore:
         logger.debug('Beginning enhance stage')
         metadata = []
         for enhancer_type in cls.enhancers:
-            logger.debug(f'Running {enhancer_type.__name__}')
             enhancer = enhancer_type(session_manager)
-            citations = enhancer.get_data()
-            for citation in citations:
-                metadata += enhancer.get_metadata(citation)
+            if enhancer.run_now:
+                logger.debug(f'Running {enhancer_type.__name__}.')
+                citations = enhancer.get_data()
+                for citation in citations:
+                    metadata += enhancer.get_metadata(citation)
+            else:
+                logger.debug(f'Not running {enhancer_type.__name__} at this time.')
         session_manager.log(metadata)
         logger.debug(f'Finished enhancing. {len(metadata)} new pieces of metadata found.')
         return metadata
