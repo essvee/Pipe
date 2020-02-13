@@ -19,7 +19,8 @@ class GmailHarvester(BaseHarvester):
     client_secret_file = 'annette/data/client_secret.json'
     application_name = 'DCP Pipeline'
 
-    def __init__(self):
+    def __init__(self, session_manager):
+        super(GmailHarvester, self).__init__(session_manager)
         self.service = self.get_credentials()
 
     def get_data(self):
