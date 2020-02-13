@@ -7,9 +7,9 @@ from ._base import BaseEnhancer
 
 
 class DimensionsEnhancer(BaseEnhancer):
-    def get_metadata(self, session_manager, citation):
+    def get_metadata(self, citation):
         # find any previous entries for this doi
-        previous = session_manager.session.query(Metrics).filter(
+        previous = self.session_manager.session.query(Metrics).filter(
             Metrics.doi == citation.doi).first()
 
         # Throttle query rate to comply with API terms of use

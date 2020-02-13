@@ -12,7 +12,7 @@ class HarvestCore:
         extracted_citations = []
         for harvester_type in cls.harvesters:
             logger.debug(f'Running {harvester_type.__name__}')
-            harvester = harvester_type()
+            harvester = harvester_type(session_manager)
             data = harvester.get_data()
             extracted_citations += harvester.parse_data(data)
         extracted_citations = session_manager.log(extracted_citations)
@@ -21,5 +21,5 @@ class HarvestCore:
 
     @classmethod
     def store(cls, session_manager, extracted_citations):
-        BaseHarvester.store_citations(extracted_citations, session_manager.session)
+        BaseHarvester(session_manager).store_citations(extracted_citations)
         logger.debug(f"{len(extracted_citations)} new citations written to extractedcitations.")

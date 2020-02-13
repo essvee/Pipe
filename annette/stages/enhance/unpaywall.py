@@ -5,9 +5,9 @@ from ._base import BaseEnhancer
 
 
 class UnpaywallEnhancer(BaseEnhancer):
-    def get_metadata(self, session_manager, citation):
+    def get_metadata(self, citation):
         # find any previous entries for this doi
-        previous = session_manager.session.query(Access).filter(
+        previous = self.session_manager.session.query(Access).filter(
             Access.doi == citation.doi).first()
 
         url = f'https://api.unpaywall.org/v2/{citation.doi}?email=s.vincent@nhm.ac.uk'

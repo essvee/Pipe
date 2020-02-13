@@ -6,6 +6,9 @@ class BaseIdentifier(object):
 
     """
 
+    def __init__(self, session_manager):
+        self.session_manager = session_manager
+
     @abstractmethod
     def get_data(self):
         """
@@ -14,11 +17,10 @@ class BaseIdentifier(object):
         """
         pass
 
-    @classmethod
-    def store_citations(cls, citations, session):
+    def store_citations(self, citations):
         """
         Store the citations.
         :return:
         """
-        session.add_all(citations)
-        session.flush()
+        self.session_manager.session.add_all(citations)
+        self.session_manager.session.flush()
