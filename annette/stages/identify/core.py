@@ -13,5 +13,5 @@ class IdentifyCore:
 
     @classmethod
     def store(cls, session_manager, citations):
-        BaseIdentifier.store_citations(citations, session_manager.session)
+        BaseIdentifier(session_manager).store_citations(citations)
         logger.debug(f"{len(citations)} new citations written to citations.")

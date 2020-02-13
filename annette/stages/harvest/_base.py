@@ -6,6 +6,9 @@ class BaseHarvester(object):
     Load, parse, and store basic citation data from a source.
     """
 
+    def __init__(self, session_manager):
+        self.session_manager = session_manager
+
     @abstractmethod
     def get_data(self):
         """
@@ -22,11 +25,10 @@ class BaseHarvester(object):
         """
         pass
 
-    @classmethod
-    def store_citations(cls, extracted_citations, session):
+    def store_citations(self, extracted_citations):
         """
         Store the extracted citation data.
         :return:
         """
-        session.add_all(extracted_citations)
-        session.flush()
+        self.session_manager.session.add_all(extracted_citations)
+        self.session_manager.session.flush()

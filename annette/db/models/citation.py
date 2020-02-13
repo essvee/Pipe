@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, ForeignKey, String
+from sqlalchemy import Column, Date, ForeignKey, String, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects import mysql
 
@@ -27,3 +27,4 @@ class Citation(Base):
     page = Column(mysql.MEDIUMTEXT)
     ecid = Column(ForeignKey(ExtractedCitation.id))
     raw = relationship('ExtractedCitation', backref='citation')
+    relevant = Column(Boolean)
