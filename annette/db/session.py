@@ -2,27 +2,24 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime as dt
+import os
 
-
-with open('annette/data/auth.txt', 'r') as f:
-    PWD, USR, DB = f.read().splitlines()
-
-SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{USR}:{PWD}@{DB}?charset=utf8"
-
-engine = create_engine(SQLALCHEMY_DATABASE_URI)
-Session = sessionmaker(bind=engine, autocommit=True)
-Base = declarative_base(engine)
+Base = declarative_base()
 
 
 class SessionManager:
-    def __init__(self):
+    database_url = os.environ.get('DATABASE_URL')
+
+    def __init__(self, testing=False):
         from .models import RunLog
+        self._engine = create_engine(f'mysql+pymysql://{self.database_url}?charset=utf8')
         self.session = None
         self.runlog = RunLog()
+        self._do_not_log = testing
 
     def __enter__(self):
-        Base.metadata.create_all(engine)
-        self.session = Session()
+        self.create()
+        self.session = sessionmaker(bind=self._engine, autocommit=True)()
         self.runlog.start = dt.now()
         self.session.add(self.runlog)
         self.session.flush()
@@ -32,7 +29,12 @@ class SessionManager:
         self.runlog.end = dt.now()
         if exc_type is not None:
             self.session.rollback()
-        self.session.add(self.runlog)
+        if self._do_not_log:
+            # there's no point in writing logs from running test suites
+            from .models import RunLog
+            self.session.query(RunLog).filter(RunLog.id == self.runlog.id).delete()
+        else:
+            self.session.add(self.runlog)
         self.session.flush()
         self.session.close()
 
@@ -43,3 +45,9 @@ class SessionManager:
         for i in items:
             i.log_id = self.runlog.id
         return items
+
+    def create(self):
+        Base.metadata.create_all(self._engine)
+
+    def drop(self):
+        Base.metadata.drop_all(self._engine)
