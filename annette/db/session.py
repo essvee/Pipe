@@ -13,7 +13,7 @@ class SessionManager:
     def __init__(self):
         from .models import RunLog
         self._engine = create_engine(f'mysql+pymysql://{self.database_url}?charset=utf8')
-        self._factory = sessionmaker(bind=self._engine)
+        self._factory = sessionmaker(bind=self._engine, autocommit=True, autoflush=True)
         self._scope = scoped_session(self._factory)
         self.session = None
         self.runlog = RunLog()
@@ -54,3 +54,8 @@ class SessionManager:
         from .models import RunLog
         Base.metadata.drop_all(self._engine)
         self.runlog = RunLog()
+
+    def add(self, *items):
+        if self.session is not None:
+            self.session.add_all(items)
+            self.session.flush()

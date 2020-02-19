@@ -11,11 +11,11 @@ with mock.patch('annette.db.session.SessionManager.database_url',
     _sm = SessionManager()
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope='function')
 def session_manager():
     _sm.drop()  # ensure we're starting with a clean db
     with _sm:
-        for test_data in [data.runlog(), data.extracted_citation(), data.citation()]:
+        for test_data in data.get_all():
             # run in a loop because some of them depend on each other
             _sm.session.add(test_data)
             _sm.session.flush()
