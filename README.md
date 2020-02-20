@@ -1,3 +1,9 @@
+# annette
+
+[![](https://img.shields.io/travis/NaturalHistoryMuseum/annette?style=flat-square)](https://travis-ci.org/NaturalHistoryMuseum/annette)
+[![](https://img.shields.io/coveralls/github/NaturalHistoryMuseum/annette?style=flat-square)](https://coveralls.io/github/NaturalHistoryMuseum/annette)
+[![](https://img.shields.io/librariesio/github/NaturalHistoryMuseum/annette?style=flat-square)](https://libraries.io/github/NaturalHistoryMuseum/annette)
+
 ## Installation
 
 ### Requirements
