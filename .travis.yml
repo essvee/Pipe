@@ -9,3 +9,5 @@ before_install:
 
 script:
   - docker-compose run backend sh deploy/test-entrypoint.sh
+
+after_success: coveralls
