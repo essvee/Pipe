@@ -82,7 +82,18 @@ def taxonomy(**kwargs):
 
 
 def access(**kwargs):
-    return Access()
+    data = {
+        'best_oa_url': 'http://http.cat/200',
+        'updated_date': dt.now().date(),
+        'pdf_url': 'http://http.cat/200.pdf',
+        'is_oa': True,
+        'host_type': 'repository',
+        'version': 'acceptedVersion',
+        'log_id': 1,
+        'doi': '10.1002/ajb2.1133'
+        }
+    data.update(kwargs)
+    return Access(**data)
 
 
 def name(**kwargs):
@@ -94,4 +105,5 @@ def get_all():
     _exci = extracted_citation(log_id=_runlog.id)
     _ci = citation(log_id=_runlog.id, ecid=_exci.id)
     _met = metrics(log_id=_runlog.id, doi=_ci.doi)
-    return _runlog, _exci, _ci, _met
+    _acc = access(log_id=_runlog.id, doi=_ci.doi)
+    return _runlog, _exci, _ci, _met, _acc

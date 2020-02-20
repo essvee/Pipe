@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 
 def column_access(cls):
     cls.columns = classmethod(lambda x: (c.name for c in x.__table__.columns))
-    cls.get_values = lambda x: (getattr(x, c) for c in x.columns())
+    cls.get_values = lambda x: {c: getattr(x, c) for c in x.columns()}
     return cls
 
 

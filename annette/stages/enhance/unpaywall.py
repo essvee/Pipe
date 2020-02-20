@@ -26,7 +26,9 @@ class UnpaywallEnhancer(BaseEnhancer):
 
         row_values = {
             'best_oa_url': best_oa_location.get('url', None),
-            'updated_date': best_oa_location.get('updated', r.json().get('updated', ''))[:10],
+            'updated_date': dt.strptime(
+                best_oa_location.get('updated', r.json().get('updated', '')),
+                '%Y-%m-%dT%H:%M:%S.%f'),
             'pdf_url': best_oa_location.get('url_for_pdf', None),
             'is_oa': is_open,
             'doi': citation.doi,

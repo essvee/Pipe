@@ -90,7 +90,7 @@ class TestDimensionsEnhancer(TestEnhancer):
     def test_creates_new(self, enhancer, mocker, session_manager):
         runlog = data.runlog(start=dt.now()-timedelta(weeks=5), end=dt.now()-timedelta(weeks=5), enhance=True)
         session_manager.add(runlog)
-        citation = data.citation(log_id=runlog.id, doi='test_creates_new-doi')
+        citation = data.citation(log_id=runlog.id, doi='test_creates_new_metrics-doi')
         old_metrics = session_manager.session.query(Metrics).filter(
             Metrics.doi == citation.doi).all()
         assert len(old_metrics) == 0  # there shouldn't be anything in there with that doi
