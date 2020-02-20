@@ -6,11 +6,13 @@ while ! mysqladmin ping -h "$DATABASE_HOST" --silent > /dev/null 2> /dev/null; d
     sleep 1
 done
 
+while ! mysqladmin ping -h "$TEST_DATABASE_HOST" --silent > /dev/null 2> /dev/null; do
+    sleep 1
+done
+
 echo "MySQL started"
 
 cd /opt/app || exit
-
-#mysql --host=$DATABASE_HOST --user=root --password=pass --database=annette_db --protocol=tcp < deploy/annette_schema.sql
 
 if [ ! -f "/root/.epitator.sqlitedb" ]; then
   # this doesn't work if you put it in the Dockerfile but

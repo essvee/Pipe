@@ -7,11 +7,14 @@ services:
       context: .
       dockerfile: deploy/backend.dockerfile
     environment:
-      DATABASE_URL: mysql://annette:pass@db:3306/annette_db
+      DATABASE_URL: annette:pass@db:3306/annette_db
       DATABASE_HOST: db
+      TEST_DATABASE_URL: annette:pass@test_db:3306/annette_db
+      TEST_DATABASE_HOST: test_db
       PYTHONUNBUFFERED: 1
     depends_on:
       - db
+      - test_db
     volumes:
       - .:/opt/app
 
@@ -20,6 +23,17 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     ports:
       - "3306:3306"
+    environment:
+      MYSQL_DATABASE: annette_db
+      MYSQL_USER: annette
+      MYSQL_PASSWORD: pass
+      MYSQL_ROOT_PASSWORD: pass
+
+  test_db:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3307:3306"
     environment:
       MYSQL_DATABASE: annette_db
       MYSQL_USER: annette

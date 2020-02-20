@@ -16,7 +16,7 @@ class TestHarvester:
 
     @pytest.fixture
     def harvester(self):
-        return self.harvester_class()
+        return self.harvester_class(mock.MagicMock())
 
     @pytest.fixture
     def parse_data_input(self):
@@ -41,7 +41,7 @@ class TestGmailHarvester(TestHarvester):
         authorized_http = _auth.authorized_http(credentials)
         service = discovery.build('gmail', 'v1', http=authorized_http, cache_discovery=False)
         with mock.patch.object(self.harvester_class, 'get_credentials', return_value=service):
-            return self.harvester_class()
+            return self.harvester_class(mock.MagicMock())
 
     def test_get_credentials(self, harvester):
         assert isinstance(harvester.service, googleapiclient.discovery.Resource)
@@ -120,8 +120,8 @@ class TestGmailHarvester(TestHarvester):
             'id': '16e08a1e6d147fa6',
             'threadId': '16e08a1e6d147fa6'
             }]
-        mocker.patch('annette.harvest.gmail.GmailHarvester.list_unread_emails',
+        mocker.patch('annette.stages.harvest.gmail.GmailHarvester.list_unread_emails',
                      return_value=email_id_list)
-        mocker.patch('annette.harvest.gmail.GmailParser.get_email',
+        mocker.patch('annette.stages.harvest.gmail.GmailParser.get_email',
                      side_effect=constants.email_list)
         assert harvester.get_data() == constants.email_list
