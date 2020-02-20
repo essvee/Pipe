@@ -10,4 +10,4 @@ echo "MySQL started"
 
 cd /opt/app || exit
 
-python -m pytest
+python -m pytest --cov=annette tests/
