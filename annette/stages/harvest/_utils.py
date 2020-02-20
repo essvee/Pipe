@@ -7,6 +7,7 @@ import logging
 
 
 logger = logging.getLogger('annette.harvest')
+logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
 handler.setFormatter(formatter)
