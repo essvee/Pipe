@@ -3,15 +3,10 @@ import re
 import unicodedata
 
 import nltk
-import logging
 
+from annette.utils.log import get_logger
 
-logger = logging.getLogger('annette.harvest')
-logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = get_logger('annette.harvest')
 
 nltk.download('punkt')
 
