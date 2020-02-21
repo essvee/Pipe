@@ -2,6 +2,7 @@
 from annette.stages.harvest import HarvestCore
 from annette.stages.identify import IdentifyCore
 from annette.stages.enhance import EnhanceCore
+from annette.stages.classify import ClassifyCore
 from annette.db import SessionManager
 
 with SessionManager() as session_manager:
@@ -51,44 +52,9 @@ with SessionManager() as session_manager:
     EnhanceCore.store(session_manager, metadata)
     session_manager.complete('enhance')
 
-    # ----------------------------------------------------------------------------------------------
-    # # Harvest metrics monthly
-    # if date.today().day == 1:
-    #     logging.info("Running metrics...")
-    #     citation_dois = list(session.query(Citation).filter(Citation.classification_id == True))
-    #     session.flush()
-    #
-    #     new_metrics = Dimensions(citation_dois).get_citations()
-    #
-    #     # Write to bibliometrics table and log results
-    #     session.add_all(new_metrics)
-    #     logging.info(f"{len(new_metrics)} access metrics written to bibliometrics.")
-    #     session.flush()
-    #
-    # print("starting access queries")
-    # # Get access data for citations newly-identified in this pass
-    # new_access = Unpaywall(identified_citations).get_access_data()
-    # session.add_all(new_access)
-    # session.flush()
-    #
-    # # Every six months, re-check all Citation records for updated access info
-    # if date.today().day == 1 and (date.today().month == 12 or date.today().month == 6):
-    #
-    #     all_records = list(session.query(Citation)
-    #                        .filter(Citation.classification_id == True,
-    #                                Citation.identified_date != date.today()))
-    #
-    #     updated_access_records = Unpaywall(all_records).get_access_data()
-    #     session.add_all(updated_access_records)
-    #     session.flush()
-    #
-    # unclassified_citations = list(
-    #     session.query(Citation).filter(Citation.classification_id == None))
-    # print("finished access queries - starting classification")
-    # ----------------------------------------------------------------------------------------------
-
     # CLASSIFY STAGE
-
+    updated_citations = ClassifyCore.run(session_manager)
+    ClassifyCore.store(session_manager, updated_citations)
     session_manager.complete('classify')
 
     # ----------------------------------------------------------------------------------------------
