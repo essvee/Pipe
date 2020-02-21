@@ -16,7 +16,7 @@ class BaseClassifier(object):
         :return:
         """
         return self.session_manager.session.query(Citation).filter(
-            Citation.classification_id is None).all()
+            Citation.classification_id.is_(None)).all()
 
     @abstractmethod
     def process_data(self, citations):
