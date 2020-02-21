@@ -111,8 +111,12 @@ class GmailParser(object):
 
             # Get snippet + features from highlights
             snippet = soup.find(class_='gse_alrt_sni')
-            snippet_distance = _utils.minimum_word_distance(snippet.text)
-            snippet_clean = _utils.clean_string(" ".join(snippet.stripped_strings))
+            if snippet is None:
+                snippet_distance = None
+                snippet_clean = ''
+            else:
+                snippet_distance = _utils.minimum_word_distance(snippet.text)
+                snippet_clean = _utils.clean_string(" ".join(snippet.stripped_strings))
             snippet_match = snippet_distance is not None
 
             # Get title
