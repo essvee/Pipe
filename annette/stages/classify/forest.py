@@ -1,6 +1,6 @@
 import dill as pickle
 import pandas as pd
-from sqlalchemy import func
+from sqlalchemy import func, not_
 
 from annette.db.models import Citation, ExtractedCitation, NHMPub
 from ._base import BaseClassifier
@@ -19,7 +19,7 @@ class RandomForestClassifier(BaseClassifier):
 
     def grouped_data(self):
         q = self.session_manager.session.query(Citation.doi,
-                                               func.isnull(NHMPub.issn).label('nhm_sub'),
+                                               not_(func.isnull(NHMPub.issn)).label('nhm_sub'),
                                                ExtractedCitation.snippet_match.label(
                                                    'snippet_match'),
                                                ExtractedCitation.highlight_length.label(
@@ -29,16 +29,16 @@ class RandomForestClassifier(BaseClassifier):
 
         df = pd.read_sql(q.statement, q.session.bind).drop_duplicates()
 
-        labels = ['Label_1', 'Label_2', 'Label_3', 'Label_4', 'Label_5', 'Label_8']
-
-        for l in labels:
-            if l in df.iloc[:, -1:].values:
-                labels.remove(l)
-
-        expanded = pd.get_dummies(df, columns=['label_id'], prefix='L')
+        labels = [f'Label_{i}' for i in [2, 3, 4, 5, 8]]
 
         for label in labels:
-            expanded[f"L_{label}"] = 0
+            if label in df.iloc[:, -1:].values:
+                labels.remove(label)
+
+        expanded_labels = pd.get_dummies(df, columns=['label_id'], prefix='L')
+
+        for label in labels:
+            expanded_labels[f'L_{label}'] = 0
 
         aggregations = {
             'nhm_sub': 'max',
@@ -52,7 +52,7 @@ class RandomForestClassifier(BaseClassifier):
             'L_Label_8': 'max'
             }
 
-        grouped_data = expanded.groupby(['doi']).agg(aggregations).reset_index()
+        grouped_data = expanded_labels.groupby(['doi']).agg(aggregations).reset_index()
         return grouped_data
 
     def process_data(self, citations):
