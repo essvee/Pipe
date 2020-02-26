@@ -1,7 +1,7 @@
 import itertools
 import re
 import unicodedata
-
+import emoji
 import nltk
 
 from annette.utils.log import get_logger
@@ -17,7 +17,7 @@ def clean_string(string):
     :param string: String to be cleaned
     :return: Clean string
     """
-    return unicodedata.normalize("NFKD", string).replace("...", "").strip()
+    return emoji.demojize(unicodedata.normalize("NFKD", string).replace("...", "").strip())
 
 
 def minimum_word_distance(string):
