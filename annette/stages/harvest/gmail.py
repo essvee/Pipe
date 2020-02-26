@@ -92,6 +92,32 @@ class GmailHarvester(BaseHarvester):
         except errors.HttpError as error:
             _utils.logger.error(f'An error occurred during unread email retrieval: ${error}')
 
+    def util_unread(self):
+        """
+        A utility function for marking all Google Scholar emails as unread. For testing/dev.
+        """
+        try:
+            query = 'from:scholaralerts-noreply@google.com'
+            page_token = None
+            p_emails = []
+            while True:
+                request = self.service.users().messages().list(userId='me',
+                                                               q=query, pageToken=page_token)
+                response = request.execute()
+                if 'messages' not in response:
+                    break
+                p_emails.extend(response['messages'])
+                if 'nextPageToken' not in response:
+                    break
+                page_token = response['nextPageToken']
+            self.service.users().messages().batchModify(userId='me', body={
+                'addLabelIds': ['UNREAD'],
+                'ids': [e['id'] for e in p_emails]
+                }).execute()
+
+        except errors.HttpError as error:
+            _utils.logger.error(f'An error occurred: ${error}')
+
 
 class GmailParser(object):
     def __init__(self, service):
