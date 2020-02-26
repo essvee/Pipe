@@ -19,13 +19,17 @@ class RandomForestClassifier(BaseClassifier):
 
     def grouped_data(self):
         q = self.session_manager.session.query(Citation.doi,
-                                               not_(func.isnull(NHMPub.issn)).label('nhm_sub'),
+                                               func.max(not_(func.isnull(NHMPub.issn))).label(
+                                                   'nhm_sub'),
                                                ExtractedCitation.snippet_match.label(
                                                    'snippet_match'),
                                                ExtractedCitation.highlight_length.label(
                                                    'highlight_length'),
                                                ExtractedCitation.label_id.label('label_id'))
+        q = q.join(ExtractedCitation)
         q = q.outerjoin(NHMPub, Citation.issn == NHMPub.issn).order_by(Citation.doi)
+        q = q.group_by(Citation.doi, ExtractedCitation.snippet_match,
+                       ExtractedCitation.highlight_length, ExtractedCitation.label_id)
 
         df = pd.read_sql(q.statement, q.session.bind).drop_duplicates()
 
@@ -36,9 +40,6 @@ class RandomForestClassifier(BaseClassifier):
                 labels.remove(label)
 
         expanded_labels = pd.get_dummies(df, columns=['label_id'], prefix='L')
-
-        for label in labels:
-            expanded_labels[f'L_{label}'] = 0
 
         aggregations = {
             'nhm_sub': 'max',
@@ -53,7 +54,7 @@ class RandomForestClassifier(BaseClassifier):
             }
 
         grouped_data = expanded_labels.groupby(['doi']).agg(aggregations).reset_index()
-        return grouped_data
+        return grouped_data.fillna(0)
 
     def process_data(self, citations):
         grouped_data = self.grouped_data()
