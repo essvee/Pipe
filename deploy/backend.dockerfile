@@ -2,11 +2,13 @@ FROM python:stretch
 
 # install OS packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
-                mysql-client
+                mysql-client graphviz
 
 # copy project files over to container
 COPY . /opt/app
 WORKDIR /opt/app
+
+COPY deploy/.jupyter /root/.jupyter
 
 # install python packages
 RUN pip install -r deploy/requirements.txt
